@@ -1,0 +1,47 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+build/
+dist/
+.eggs/
+
+# ---- Virtual envs ----
+.venv/
+venv/
+env/
+
+# ---- Test / coverage caches ----
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# ---- IDE / OS ----
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# ---- Project: large data & experiment outputs (regenerable, do NOT version) ----
+results/
+data/
+tcrconsensus_output/
+.benchmarks/
+
+# ---- Project: safety backups (archived outside repo; ignore any stray) ----
+*_backup_*/
+_tier*_backup_*/
+_tier*_backup_path.txt
+
+# ---- Project: internal scratch run notes (not published in public repo) ----
+notes*.html
+
+# ---- Misc large/regenerable artifacts ----
+*.log
+VgeneScores.txt

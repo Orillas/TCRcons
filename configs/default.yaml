@@ -1,0 +1,81 @@
+# TCR Consensus default configuration
+
+io:
+  input_format: auto  # auto | airr | vdjdb | custom
+  column_map: null
+  required_fields: [tcr_id, cdr3_beta]
+
+profiling:
+  noise_estimation:
+    singleton_weight: 0.3
+    lowfreq_weight: 0.2
+    vj_skew_weight: 0.2
+    density_weight: 0.15
+    motif_weight: 0.15
+  lowfreq_threshold: 0.01
+
+selection:
+  rules:
+    bulk_noisy_beta:
+      methods: [tcrdist3, gliph2, hd_baseline]
+      consensus_mode: conservative
+    antigen_enriched:
+      methods: [clustcr, giana, gliph2, tcrdist3]
+      consensus_mode: balanced
+    high_purity:
+      methods: [clustcr, tcrmatch, gliph2]
+      consensus_mode: conservative
+    high_recall:
+      methods: [deeptcr, giana, ismart]
+      consensus_mode: coverage
+
+consensus:
+  conservative:
+    min_method_support: 2
+    require_high_purity: true
+    high_purity_methods: [clustcr, tcrmatch, gliph2]
+  balanced:
+    threshold: 0.3
+    algorithm: leiden
+    resolution: 1.0
+  coverage:
+    threshold: 0.1
+    algorithm: leiden
+    resolution: 0.8
+  weights:
+    global_priors:
+      tcrdist3: {purity: 0.6, sensitivity: 0.7, noise_robust: 0.8, speed: 0.5}
+      gliph2: {purity: 0.7, sensitivity: 0.6, noise_robust: 0.6, speed: 0.7}
+      clustcr: {purity: 0.8, sensitivity: 0.4, noise_robust: 0.5, speed: 0.9}
+      giana: {purity: 0.65, sensitivity: 0.65, noise_robust: 0.6, speed: 0.8}
+      tcrmatch: {purity: 0.75, sensitivity: 0.55, noise_robust: 0.6, speed: 0.7}
+      deeptcr: {purity: 0.6, sensitivity: 0.8, noise_robust: 0.7, speed: 0.3}
+      hd_baseline: {purity: 0.3, sensitivity: 0.5, noise_robust: 0.7, speed: 1.0}
+    coefficients:
+      high_purity: {a: 0.5, b: 0.1, c: 0.2, d: 0.2}
+      high_recall: {a: 0.1, b: 0.5, c: 0.2, d: 0.2}
+      noise_robust: {a: 0.2, b: 0.2, c: 0.5, d: 0.1}
+      balanced: {a: 0.25, b: 0.25, c: 0.25, d: 0.25}
+
+refinement:
+  split:
+    min_consensus_score: 0.2
+    max_motif_conflict: 2
+    min_vj_coherence: 0.3
+  merge:
+    min_core_overlap: 0.5
+    min_cross_association: 0.4
+  filter:
+    min_member_confidence: 0.1
+  confidence:
+    core_threshold: 0.6
+    peripheral_threshold: 0.3
+
+evaluation:
+  metrics: [retention, purity, sensitivity, f1, ari, nmi]
+  tradeoff_curves: true
+
+reporting:
+  formats: [json, markdown, tsv]
+  figures: true
+  figure_formats: [png]

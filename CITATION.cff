@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "tcrconsensus"
+# TODO(authorship): replace with real authors/ORCID before Zenodo deposit
+authors:
+  - name: "TCR-Consensus Team"
+type: software
+version: "1.0.0"
+date-released: "2026-06-27"
+license: MIT
+repository-code: "https://github.com/Orillas/TCRcons"
+keywords:
+  - TCR
+  - T-cell receptor
+  - clustering
+  - consensus
+  - specificity
+  - bioinformatics
+abstract: >-
+  Scenario-adaptive ensemble consensus clustering for T-cell receptor (TCR)
+  specificity. tcrconsensus aggregates multiple specificity-clustering methods
+  into a consensus via weighted pairwise support and connected-component
+  refinement, with calibration and signed-repulsion refinements.

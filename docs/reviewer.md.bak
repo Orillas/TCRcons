@@ -1,0 +1,287 @@
+# tcrconsensus Review Guidelines
+
+> BMC Bioinformatics reviewer perspective: how to demonstrate consensus clustering outperforms single methods.
+
+---
+
+## 1. Primary Evidence (must report)
+
+### ΔARI vs best single method
+
+Consensus ARI minus best single-method ARI. Direct answer to "how much better than the strongest baseline?"
+
+```
+Dataset         Best Single (ARI)   Consensus (ARI)   ΔARI
+VDJdb           clustcr    0.412    balanced  0.487   +0.075
+McPAS-TCR       tcrdist3   0.351    balanced  0.403   +0.052
+IEDB            gliph2     0.298    balanced  0.334   +0.036
+```
+
+Report per-dataset. Never aggregate ΔARI across datasets without showing per-dataset breakdown.
+
+### Per-epitope F1 distribution
+
+Boxplot of per-epitope F1 scores. Exposes where single methods collapse and consensus rescues.
+
+```
+Epitope        hd_baseline  clustcr  gliph2  tcrdist3  Consensus
+GILGFVFTL      0.72         0.68     0.81    0.45      0.78
+NLVPMVATV      0.55         0.60     0.21    0.73      0.71
+ELAGIGILTV     0.38         0.35     0.42    0.40      0.51
+...
+```
+
+Key claim: consensus never worst performer on any epitope. Or: consensus within top-2 for ≥80% of epitopes.
+
+### Method failure tolerance
+
+Randomly disable 1-2 methods. Consensus ARI drop vs. single method direct failure.
+
+```
+Condition                    ARI    Δ from full
+Full consensus (7 methods)   0.487  —
+Remove clustcr               0.472  −0.015
+Remove tcrdist3              0.461  −0.026
+Remove gliph2                0.479  −0.008
+Random single method fails   0.000  (catastrophic)
+```
+
+Interpretation: single method failure = zero output. Consensus failure = graceful degradation <5%.
+
+### Rank stability across benchmarks
+
+Spearman rank correlation of method performance across datasets. Or: fraction of datasets where consensus ranks #1.
+
+```
+                VDJdb   McPAS   IEDB    Mean Rank
+Consensus       1       1       2       1.33
+clustcr         2       3       1       2.00
+tcrdist3        3       2       3       2.67
+gliph2          4       4       4       4.00
+...
+```
+
+---
+
+## 2. Secondary Evidence (should report)
+
+### V-measure (homogeneity + completeness)
+
+More robust to class imbalance than ARI. Does not assume cluster = epitope.
+
+```
+Homogeneity:  Within each cluster, how pure is the epitope distribution?
+Completeness: Within each epitope, how well are TCRs grouped together?
+```
+
+Report both. High homogeneity + moderate completeness = conservative but clean clusters (preferable for biological interpretation).
+
+### Adjusted Mutual Information (AMI)
+
+Information-theoretic. Corrects for chance better than NMI. Best used alongside ARI as consistency check — both should point same direction.
+
+### Cross-dataset generalization
+
+Same model config, different datasets. Variance of performance across datasets measures robustness.
+
+```
+Method        Mean ARI    Std ARI    CV
+Consensus     0.408       0.076      18.6%
+clustcr       0.385       0.112      29.1%
+tcrdist3      0.362       0.134      37.0%
+```
+
+Low CV for consensus = not overfit to one dataset's idiosyncrasies.
+
+### Per-cluster confidence calibration
+
+Do high-confidence clusters have high purity?
+
+```
+Confidence bin   N clusters   Mean purity
+[0.0, 0.3)       45           0.21
+[0.3, 0.6)       28           0.54
+[0.6, 0.8)       15           0.79
+[0.8, 1.0]       8            0.94
+```
+
+Monotonic relationship = confidence scores are meaningful.
+
+---
+
+## 3. Reviewer's 5 Critical Questions
+
+### Q1: Does consensus just pick the single best method?
+
+**Required evidence:** Show that on dataset A, method X is best; on dataset B, method Y is best; consensus matches or exceeds best on both.
+
+```
+                    ARI on VDJdb   ARI on McPAS
+Best single method   clustcr 0.41   tcrdist3 0.35
+Consensus            0.49           0.40
+```
+
+Consensus wins on both despite different methods leading each dataset.
+
+### Q2: Is the improvement statistically significant?
+
+**Required evidence:** 10-fold epitope-stratified cross-validation with 95% confidence intervals. Not single-run ARI.
+
+```
+Method        Mean ARI    95% CI
+clustcr       0.385       [0.352, 0.418]
+tcrdist3      0.371       [0.339, 0.403]
+Consensus     0.408       [0.381, 0.435]
+```
+
+Non-overlapping CIs with all single methods = significant.
+
+### Q3: Is more methods just luck?
+
+**Required evidence:** Method count vs. performance curve. Show diminishing returns plateau beyond 3-4 methods.
+
+```
+N methods    ARI
+1 (best)     0.385
+2            0.402
+3            0.407
+4            0.408
+5            0.408
+6            0.407
+7            0.408
+```
+
+Plateau at 3-4 methods → not "throw everything and hope." Good sign: diversity saturates.
+
+### Q4: Were weights tuned post-hoc?
+
+**Required evidence:** Report main results with default (untuned) weights. Tuned weights as supplementary analysis.
+
+```
+Weights         ARI
+Default (all=1) 0.408   ← main result
+Benchmark prior 0.412   ← supplementary
+Per-dataset opt 0.431   ← supplementary (upper bound)
+```
+
+Default near tuned → robust. Default far from tuned → suspicious.
+
+### Q5: Is the clustering biologically meaningful?
+
+**Required evidence:** Show 1-2 specific clusters where consensus finds TCR specificity patterns that single methods miss. Validate with literature.
+
+```
+Example: Epitope "NLVPMVATV" (CMV-pp65)
+
+Single methods:
+  clusTCR:    cluster of motif CAS***EQYF              (12 TCRs, purity 0.83)
+  gliph2:     cluster of motif CASS****YEQF            (8 TCRs, purity 0.75)
+  tcrdist3:   2 small clusters                         (5+3 TCRs)
+
+Consensus:
+  Merged cluster with 3 sub-clusters                   (20 TCRs, purity 0.90)
+  Core motif: CASS[ILV]***[YF]EQ[YF]F
+  Literature: Shugay et al. 2018 report this public motif
+  Single methods each capture subset; consensus unifies them.
+```
+
+---
+
+## 4. Fatal Errors (reviewer will reject)
+
+| Error | Reviewer conclusion |
+|-------|-------------------|
+| Only synthetic data validation | "Not proven useful for real biology" |
+| Global average only, no per-epitope breakdown | "May be ineffective for most epitopes" |
+| No variance or confidence intervals | "Could be luck" |
+| No weight ablation | "Weights may be overfitted" |
+| Only ARI, no V-measure or AMI | "Metric selection may be biased" |
+| No comparison to simple baselines | "Trivial solution might work" |
+| No failure case discussion | "Overclaimed" |
+
+### Mandatory baselines (beyond single methods)
+
+- **Majority vote** (binary co-association, no weighting)
+- **Intersection only** (TCR pairs agreed by all methods)
+- **Best single method** (upper bound for single-method claim)
+- **Random clustering** (lower bound sanity check)
+
+---
+
+## 5. Recommended Experiment Suite
+
+### Experiment 1: Cross-benchmark comparison
+
+```
+Data:      VDJdb + McPAS-TCR + IEDB (≥3 independent sources)
+Methods:   7 single + 3 consensus modes
+CV:        10-fold epitope-stratified
+Report:    Mean ARI ± 95% CI, per-dataset, per-method
+Table:     Heatmap (methods × datasets) with consensus row highlighted
+```
+
+### Experiment 2: Robustness stress test
+
+```
+Inject:    10% / 25% / 50% label noise
+Metric:    ARI degradation ratio (noised / clean)
+Claim:     Consensus degrades slower than single methods
+Plot:      Line chart: noise level vs. ARI, one line per method
+```
+
+### Experiment 3: Component ablation
+
+```
+Conditions:
+  Full consensus
+  − weights (all methods equal weight)
+  − refinement (skip split/merge/filter)
+  − 1 method at a time (leave-one-out)
+  − clustering algorithm (Louvain vs. Leiden vs. connected components)
+
+Report:    Marginal contribution of each component to final ARI
+Table:     Ablation table with ΔARI per removed component
+```
+
+### Experiment 4: Biological case study
+
+```
+Select:    1-2 well-characterized epitopes (e.g., Flu-M1 GILGFVFTL, CMV-pp65 NLVPMVATV)
+Show:      Cluster membership table (TCRs + which single methods captured them)
+           Logo plot of consensus cluster motif
+           Reference back to published TCR repertoire studies
+Claim:     "Consensus discovered public TCR motif missed by all individual methods"
+           OR "Consensus unified sub-clusters that single methods fragmented"
+```
+
+---
+
+## 6. Reporting Checklist
+
+- [ ] Per-dataset per-method ARI/AMI/V-measure table
+- [ ] Per-epitope F1 distribution (boxplot or violin)
+- [ ] ΔARI vs best single, per dataset, with 95% CI
+- [ ] Method failure tolerance (leave-one-out ablation on methods)
+- [ ] Rank stability (Spearman ρ across datasets)
+- [ ] Weight ablation (default vs. tuned vs. equal)
+- [ ] Refinement ablation (split/merge/filter on vs. off)
+- [ ] Confidence calibration curve
+- [ ] At least 1 biological case study with literature validation
+- [ ] Runtime comparison (consensus overhead vs. single methods)
+- [ ] Failure mode discussion (when does consensus NOT help?)
+- [ ] Code + config + seeds for full reproducibility
+
+---
+
+## 7. Example Figure Layout (for manuscript)
+
+```
+Figure 1: Architecture overview (pipeline diagram)
+Figure 2: Per-dataset ARI comparison (bar chart with error bars, consensus highlighted)
+Figure 3: Per-epitope F1 distribution (violin plot, consensus vs. top-3 single methods)
+Figure 4: Robustness analysis (noise stress test + method failure tolerance)
+Figure 5: Biological case study (cluster logo + literature validation)
+Figure S1: Ablation heatmap (leave-one-method-out × leave-one-component-out)
+Figure S2: Confidence calibration (per-bin purity vs. confidence score)
+Figure S3: Runtime scaling (n TCRs vs. wall-clock, per method)
+```

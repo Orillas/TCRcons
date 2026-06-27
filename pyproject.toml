@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tcrconsensus"
+version = "1.0.0"
+description = "Scenario-adaptive TCR specificity consensus clustering framework"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+# TODO(authorship): replace with real authors/ORCID before Zenodo deposit
+authors = [{name = "TCR-Consensus Team"}]
+
+dependencies = [
+    "pandas>=1.5",
+    "numpy>=1.23",
+    "click>=8.0",
+    "pyyaml>=6.0",
+    "networkx>=2.8",
+    "scipy>=1.9",
+    "scikit-learn>=1.1",
+    "matplotlib>=3.6",
+]
+
+[project.optional-dependencies]
+clusterers = [
+    "clustcr>=1.0",
+    "tcrdist3>=3.2",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "build>=1.0",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+tcrconsensus = "tcrconsensus.cli.main:cli"
+
+# [project.urls]
+# TODO(repository): fill after GitHub push
+# Homepage = "https://github.com/<owner>/tcrconsensus"
+# Repository = "https://github.com/<owner>/tcrconsensus"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tcrconsensus"]
+
+[tool.hatch.build]
+# defense-in-depth: keep backups/caches out of sdist + wheel even if re-introduced
+exclude = [
+    "**/__pycache__",
+    "**/_tier*_backup_*",
+    "**/_tier*_backup_path.txt",
+    "**/*_backup_*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
