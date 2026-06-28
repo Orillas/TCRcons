@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from importlib import resources
 from pathlib import Path
 from typing import Any, Optional
 
@@ -37,6 +38,23 @@ def _deep_merge(base: dict, override: dict) -> dict:
     return result
 
 
+def _packaged_configs_dir() -> Path:
+    """Locate the bundled ``configs/`` directory.
+
+    Works in the source tree, an editable install, and a regular ``pip install``
+    of the wheel (where ``configs/default.yaml`` ships inside the package).
+    Falls back to the directory next to this module if resource lookup fails.
+    """
+    try:
+        ref = resources.files("tcrconsensus") / "configs"
+        path = Path(str(ref))
+        if path.is_dir():
+            return path
+    except Exception:
+        pass
+    return Path(__file__).resolve().parent / "configs"
+
+
 def load_config(
     user_yaml: Optional[str] = None,
     preset: Optional[str] = None,
@@ -45,13 +63,13 @@ def load_config(
     """Load layered configuration.
 
     Layer order (later overrides earlier):
-    1. default.yaml
+    1. packaged default.yaml
     2. preset (e.g. 'high_purity', 'noise_robust')
     3. user YAML file
     """
-    # Default config
+    # Default config — packaged inside the package, located via importlib.resources
     if package_dir is None:
-        package_dir = str(Path(__file__).parent.parent.parent / "configs")
+        package_dir = str(_packaged_configs_dir())
     default_path = Path(package_dir) / "default.yaml"
 
     config: dict = {}
