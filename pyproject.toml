@@ -47,12 +47,17 @@ tcrconsensus = "tcrconsensus.cli.main:cli"
 packages = ["src/tcrconsensus"]
 
 [tool.hatch.build]
-# defense-in-depth: keep backups/caches out of sdist + wheel even if re-introduced
+# defense-in-depth: keep backups/caches/dead-filetypes out of sdist + wheel
+# even if re-introduced into the tree
 exclude = [
     "**/__pycache__",
     "**/_tier*_backup_*",
     "**/_tier*_backup_path.txt",
     "**/*_backup_*",
+    "**/*.bak",
+    "**/*.patch",
+    "**/*.orig",
+    "**/*.hier_patch",
 ]
 
 [tool.pytest.ini_options]
