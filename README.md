@@ -22,13 +22,20 @@ pip install ".[dev]"
 - Python ≥ 3.10
 - pandas, numpy, click, pyyaml, networkx, scipy, scikit-learn, matplotlib
 
-### External Tools (optional)
+### Clustering Methods
 
-| Tool | Install | Notes |
-|------|---------|-------|
-| clusTCR | `pip install clustcr` | Python package |
-| tcrdist3 | `pip install tcrdist3` | Python package |
-| GLIPH2 | Binary on PATH | Subprocess wrapper |
+tcrconsensus aggregates seven TCR clustering methods. `hd_baseline` is built in;
+the rest are optional backends — install the ones you intend to use.
+
+| Method | Backend | Install |
+|--------|---------|---------|
+| Hamming baseline | built-in | — |
+| clusTCR | Python package | `pip install clustcr` |
+| tcrdist3 | Python package | `pip install tcrdist3` |
+| DeepTCR | Python package (TensorFlow; optional GPU) | `pip install DeepTCR` |
+| GLIPH2 | external binary (subprocess) | on `PATH` |
+| GIANA | external binary (subprocess) | on `PATH` |
+| TCRMatch | external binary (subprocess) | on `PATH` |
 
 ## Quick Start
 
@@ -183,6 +190,34 @@ pytest tests/ -v
 pytest tests/ --cov=tcrconsensus
 ```
 
+## Reproducibility & data
+
+This repository ships the software, the test suite, a minimal `examples/`
+dataset, and the default configuration. The full benchmark datasets and the
+experiment scripts that produced the manuscript figures are maintained
+separately — see the accompanying publication and its data-availability
+statement for benchmark acquisition. A self-contained example ships in the repo:
+
+```bash
+tcrconsensus run examples/synthetic_tcrs.tsv --mode balanced -o out/
+```
+
+## Citation
+
+If you use tcrconsensus, please cite:
+
+```bibtex
+@software{tcrconsensus,
+  title  = {tcrconsensus: Scenario-adaptive TCR specificity consensus clustering},
+  author = {{TCR-Consensus Team}},
+  year   = {2026},
+  url    = {https://github.com/Orillas/TCRcons}
+}
+```
+
+A versioned DOI (Zenodo) and the full author list will be added here upon
+deposit. See [`CITATION.cff`](CITATION.cff).
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 TCR-Consensus Team.

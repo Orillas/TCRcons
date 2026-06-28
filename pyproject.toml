@@ -38,10 +38,11 @@ dev = [
 [project.scripts]
 tcrconsensus = "tcrconsensus.cli.main:cli"
 
-# [project.urls]
-# TODO(repository): fill after GitHub push
-# Homepage = "https://github.com/<owner>/tcrconsensus"
-# Repository = "https://github.com/<owner>/tcrconsensus"
+[project.urls]
+Homepage = "https://github.com/Orillas/TCRcons"
+Repository = "https://github.com/Orillas/TCRcons"
+Issues = "https://github.com/Orillas/TCRcons/issues"
+# DOI backfilled here after Zenodo deposit
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tcrconsensus"]

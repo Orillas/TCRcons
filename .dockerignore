@@ -1,0 +1,35 @@
+# VCS
+.git/
+.gitignore
+.github/
+
+# Python build artifacts / caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual envs
+.venv/
+venv/
+
+# Large / regenerable project artifacts — do not bake into the image
+results/
+data/
+tcrconsensus_output/
+.benchmarks/
+*.log
+
+# Internal scratch notes
+notes*.html
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
