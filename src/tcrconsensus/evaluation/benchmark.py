@@ -426,12 +426,12 @@ def _get_available_clusterers() -> dict:
 
     try:
         from ..clusterers.giana_wrapper import GIANAWrapper
-        clusterers["giana"] = GIANAWrapper(giana_script="/home/jilin/DeepTCR/GIANA/GIANA4.1.py")
+        clusterers["giana"] = GIANAWrapper()
     except Exception:
         pass
     try:
         from ..clusterers.tcrmatch_wrapper import TCRMatchWrapper
-        clusterers["tcrmatch"] = TCRMatchWrapper(tcrmatch_bin="/home/jilin/DeepTCR/TCRMatch/tcrmatch")
+        clusterers["tcrmatch"] = TCRMatchWrapper()
     except Exception:
         pass
     try:

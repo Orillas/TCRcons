@@ -28,8 +28,21 @@ from ..schema.records import ClusterAssignment
 
 logger = logging.getLogger(__name__)
 
-# Path to GLIPH2 binary and reference files
-_GLIPH2_LIB = "/home/jilin/DeepTCR/clusTCR/clustcr/modules/gliph2/lib"
+def _resolve_gliph2_lib(gliph2_lib: str | None) -> str:
+    """Resolve the GLIPH2 lib directory (param > env > error).
+
+    The lib directory must contain the compiled ``irtools`` binary and the
+    GLIPH2 v2.0 reference files (``ref_CD8_v2.0.fa`` etc.).
+    """
+    lib = gliph2_lib or os.environ.get("TCR_GLIPH2_LIB")
+    if not lib:
+        raise FileNotFoundError(
+            "GLIPH2 lib directory not configured. Pass gliph2_lib=... to "
+            "GLIPH2Wrapper or set the TCR_GLIPH2_LIB environment variable "
+            "(the directory holding the compiled irtools binary and the "
+            "GLIPH2 v2.0 reference files)."
+        )
+    return lib
 
 
 class GLIPH2Wrapper(BaseClusterer):
@@ -39,7 +52,7 @@ class GLIPH2Wrapper(BaseClusterer):
 
     def __init__(
         self,
-        gliph2_lib: str = _GLIPH2_LIB,
+        gliph2_lib: str | None = None,
         lcminp: float = 0.001,
         p_depth: int = 1000,
         kmer_min_depth: int = 3,
@@ -129,6 +142,7 @@ class GLIPH2Wrapper(BaseClusterer):
         if not records:
             return {"assignments": []}
         workdir.mkdir(parents=True, exist_ok=True)
+        self.gliph2_lib = _resolve_gliph2_lib(self.gliph2_lib)
 
         # ---- Write parameters file ----
         param_path = os.path.join(self.gliph2_lib, "parameters_tcrconsensus")

@@ -13,6 +13,8 @@ Paper approach:
 from __future__ import annotations
 
 import logging
+import os
+import shutil
 import subprocess
 import tempfile
 from collections import defaultdict
@@ -44,11 +46,13 @@ class TCRMatchWrapper(BaseClusterer):
     def __init__(
         self,
         tcrmatch_bin: str = "",
+        iedb_db: str = "",
         threshold: float = 0.97,
         n_threads: int = 4,
         max_memory_gb: int = 8,
     ):
         self.tcrmatch_bin = tcrmatch_bin
+        self.iedb_db = iedb_db
         self.threshold = threshold
         self.n_threads = n_threads
         self.max_memory_gb = max_memory_gb
@@ -84,20 +88,30 @@ class TCRMatchWrapper(BaseClusterer):
         output_dir = workdir / "tcrmatch_output"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        binary = self.tcrmatch_bin
+        binary = (
+            self.tcrmatch_bin
+            or os.environ.get("TCR_TCRMATCH_BIN")
+            or shutil.which("tcrmatch")
+        )
         if not binary:
-            for c in [Path("/home/jilin/DeepTCR/TCRMatch/tcrmatch"),
-                      Path.home() / "DeepTCR" / "TCRMatch" / "tcrmatch"]:
-                if c.exists():
-                    binary = str(c)
-                    break
-        if not binary:
-            raise FileNotFoundError("TCRMatch binary not found.")
+            raise FileNotFoundError(
+                "TCRMatch binary not found. Pass tcrmatch_bin=... to "
+                "TCRMatchWrapper, set the TCR_TCRMATCH_BIN environment "
+                "variable, or install the `tcrmatch` binary on PATH."
+            )
 
-        iedb_db = Path("/home/jilin/DeepTCR/TCRMatch/data/IEDB_data.tsv")
-        if not iedb_db.exists():
+        iedb_db = self.iedb_db or os.environ.get("TCR_TCRMATCH_IEDB")
+        if not iedb_db:
             iedb_db = prepared_input
-            logger.warning("IEDB database not found, using self-comparison")
+            logger.warning(
+                "IEDB database not configured (set TCR_TCRMATCH_IEDB); "
+                "using self-comparison"
+            )
+        elif not Path(iedb_db).exists():
+            iedb_db = prepared_input
+            logger.warning(
+                "IEDB database not found at %s; using self-comparison", iedb_db
+            )
 
         cmd = [binary, "-i", str(prepared_input), "-t", str(self.n_threads),
                "-s", str(self.threshold), "-d", str(iedb_db),

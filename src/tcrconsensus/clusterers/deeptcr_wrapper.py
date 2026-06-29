@@ -164,18 +164,32 @@ class DeepTCRWrapper(BaseClusterer):
         if n == 0:
             return {"assignments": []}
 
-        # --- Set up CUDA library path for GPU ---
-        venv_site = "/home/jilin/DeepTCR/.venv/lib/python3.10/site-packages"
-        nvidia_lib = ":".join(
-            f"{venv_site}/nvidia/{pkg}/lib"
-            for pkg in [
-                "cublas", "cuda_cupti", "cuda_nvrtc", "cuda_runtime",
-                "cudnn", "cufft", "curand", "cusolver", "cusparse", "nccl",
-            ]
+        # --- Set up CUDA library path for GPU, if nvidia pip packages exist locally ---
+        import site as _site_mod
+        import sys as _sys
+        _sp_dirs = list(_site_mod.getsitepackages()) + [_site_mod.getusersitepackages()]
+        _sp_dirs.append(
+            os.path.join(
+                _sys.prefix, "lib",
+                f"python{_sys.version_info.major}.{_sys.version_info.minor}",
+                "site-packages",
+            )
         )
-        os.environ["LD_LIBRARY_PATH"] = (
-            f"{nvidia_lib}:{os.environ.get('LD_LIBRARY_PATH', '')}"
-        )
+        _nvidia_pkgs = [
+            "cublas", "cuda_cupti", "cuda_nvrtc", "cuda_runtime",
+            "cudnn", "cufft", "curand", "cusolver", "cusparse", "nccl",
+        ]
+        nvidia_lib = ""
+        for _sp in _sp_dirs:
+            if all(os.path.isdir(os.path.join(_sp, "nvidia", _p, "lib")) for _p in _nvidia_pkgs):
+                nvidia_lib = ":".join(
+                    os.path.join(_sp, "nvidia", _p, "lib") for _p in _nvidia_pkgs
+                )
+                break
+        if nvidia_lib:
+            os.environ["LD_LIBRARY_PATH"] = (
+                f"{nvidia_lib}:{os.environ.get('LD_LIBRARY_PATH', '')}"
+            )
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
         import subprocess as _sp

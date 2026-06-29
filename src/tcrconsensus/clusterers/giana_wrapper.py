@@ -22,7 +22,9 @@ from __future__ import annotations
 import logging
 import os
 import re
+import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -152,26 +154,21 @@ class GIANAWrapper(BaseClusterer):
             output_dir = workdir / "giana_output"
             output_dir.mkdir(parents=True, exist_ok=True)
 
-            # ---- Locate GIANA script ----
-            script = self.giana_script
+            # ---- Locate GIANA script (param > env > PATH > error) ----
+            script = self.giana_script or os.environ.get("TCR_GIANA_SCRIPT")
             if not script:
-                candidates = [
-                    Path.home() / "DeepTCR" / "GIANA" / "GIANA4.1.py",
-                    Path("/home/jilin/DeepTCR/GIANA/GIANA4.1.py"),
-                ]
-                for c in candidates:
-                    if c.exists():
-                        script = str(c)
-                        break
+                script = shutil.which("GIANA4.1.py") or shutil.which("giana")
             if not script:
                 raise FileNotFoundError(
-                    "GIANA script not found. Set giana_script path in config."
+                    "GIANA script not found. Pass giana_script=... to "
+                    "GIANAWrapper, set the TCR_GIANA_SCRIPT environment "
+                    "variable, or place GIANA4.1.py on PATH."
                 )
 
             # ---- Build command ----
             # Paper: Vgene=False (-v), exact=True (default), thr=7.0
             cmd = [
-                "/home/jilin/DeepTCR/.venv/bin/python3", script,
+                sys.executable, script,
                 "-f", input_path,
                 "-t", str(self.threshold),
                 "-S", str(self.threshold_score),
@@ -260,7 +257,6 @@ class GIANAWrapper(BaseClusterer):
             logger.error(f"GIANA script not found: {script}")
             raise
         finally:
-            import shutil
             shutil.rmtree(tmpdir, ignore_errors=True)
 
     def parse_output(self, workdir: Path) -> dict:
