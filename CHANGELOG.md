@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- `[deeptcr]` extra now pins the TensorFlow stack to the known-good versions from
+  the reference Linux+CUDA host (`tensorflow==2.15.1`, `keras==2.15.0`,
+  `tensorflow-estimator==2.15.0`, `tensorflow-io-gcs-filesystem==0.37.1`), so
+  `pip install ".[deeptcr]"` reproduces the DeepTCR environment. Removed the
+  duplicate commented block from `requirements.txt` (the extra is now the single
+  source of truth).
+
 ## [1.1.0] - 2026-06-29
 
 ### Added

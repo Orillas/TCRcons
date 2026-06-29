@@ -33,7 +33,16 @@ tcrdist3 = ["tcrdist3>=0.3"]
 # DeepTCR is sdist-only; its setup.py probes `nvidia-smi` at build time, so
 # `pip install ".[deeptcr]"` can FAIL on GPU-less hosts. Install on a CUDA
 # machine, or pre-install TensorFlow and use `pip install DeepTCR --no-deps`.
-deeptcr = ["DeepTCR"]
+# TensorFlow is pinned to the known-good stack from the reference Linux+CUDA host
+# (DeepTCR venv). TF 2.15.x needs numpy<2 (auto-resolved) and the nvidia-*-cu12
+# wheels for GPU.
+deeptcr = [
+    "DeepTCR",
+    "tensorflow==2.15.1",
+    "keras==2.15.0",
+    "tensorflow-estimator==2.15.0",
+    "tensorflow-io-gcs-filesystem==0.37.1",
+]
 # Umbrella: every backend that installs cleanly via pip. clustcr is intentionally
 # excluded — it pins scipy==1.8 in its setup.py, which conflicts with this
 # package's scipy>=1.9; install clustcr manually (see README). GLIPH2 / GIANA /

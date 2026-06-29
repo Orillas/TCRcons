@@ -11,7 +11,7 @@ matplotlib>=3.6
 # Optional clusterer backends — install via the pyproject extras, NOT by
 # uncommenting here (several are not pip-installable from PyPI):
 #   pip install ".[tcrdist3]"   # tcrdist3>=0.3 (needs a parasail C build)
-#   pip install ".[deeptcr]"    # DeepTCR (TensorFlow; sdist probes nvidia-smi)
+#   pip install ".[deeptcr]"    # DeepTCR + TensorFlow 2.15.1 (pinned; sdist probes nvidia-smi)
 #   pip install ".[clusterers]" # both of the above
 # clusTCR is NOT on PyPI and pins scipy==1.8 — install manually:
 #   pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
