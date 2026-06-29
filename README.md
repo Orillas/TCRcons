@@ -1,5 +1,7 @@
 # TCR Consensus Clustering
 
+[![CI](https://github.com/Orillas/TCRcons/actions/workflows/ci.yml/badge.svg)](https://github.com/Orillas/TCRcons/actions/workflows/ci.yml)
+
 **Scenario-adaptive TCR specificity consensus clustering framework.**
 
 Combines seven TCR clustering methods (clusTCR, GLIPH2, tcrdist3, GIANA, TCRMatch, DeepTCR, Hamming baseline) via weighted co-association consensus, plus a built-in Levenshtein edit-distance baseline. Automatically profiles input data, selects optimal method combinations, and produces refined consensus clusters with confidence scores.
