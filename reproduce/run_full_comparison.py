@@ -24,10 +24,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 for noisy in ['numba', 'tensorflow', 'absl', 'matplotlib']:
     logging.getLogger(noisy).setLevel(logging.ERROR)
 
-# Dev-environment path hints (no-op if the dirs do not exist; pip-installed users
-# do not need them — tcrconsensus and clusTCR resolve via the installed packages).
-for _p in ("/home/jilin/DeepTCR/tcrconsensus/src", "/home/jilin/DeepTCR/clusTCR"):
-    if os.path.isdir(_p) and _p not in sys.path:
+# Optional dev path hints (e.g. an editable tcrconsensus/src checkout or a local
+# clusTCR clone). pip-installed users do not need these — both resolve via the
+# installed packages. Set TCR_EXTRA_PATHS="/path/a:/path/b" to add directories.
+for _p in os.environ.get("TCR_EXTRA_PATHS", "").split(os.pathsep):
+    if _p and os.path.isdir(_p) and _p not in sys.path:
         sys.path.insert(0, _p)
 
 import numpy as np

@@ -4,6 +4,39 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-06-29
+
+### Added
+- `tcrconsensus install-backends` CLI command: clones and builds the external
+  backends GIANA, TCRMatch and GLIPH2 **on the user's machine** into a standard
+  backends directory. GIANA = pure-Python clone; TCRMatch = clone + `make` +
+  IEDB reference-data download; GLIPH2 = clone clusTCR (MIT) to obtain the
+  bundled `irtools` binary + v2.0 reference files. All carry non-commercial
+  licenses (GIANA: UT Southwestern academic-only; TCRMatch: Non-Profit OSL 3.0;
+  GLIPH2's irtools: academic-use) and cannot be bundled in this MIT package, so
+  tcrconsensus never redistributes them — the user pulls them directly from
+  upstream.
+- The GIANA, TCRMatch and GLIPH2 wrappers now auto-discover the backends
+  directory (`$TCRCONS_BACKEND_DIR`, or `~/.local/share/tcrconsensus/backends`);
+  no `TCR_*` environment variables are required after `install-backends`. Note:
+  `irtools` is a Linux-only binary, and a pip-installed clusTCR does not ship it
+  — the `install-backends --gliph2` clone is what provides it.
+
+### Fixed
+- GIANA wrapper now runs `GIANA4.1.py` with its own directory as CWD, so it
+  finds its bundled `Imgt_Human_TRBV.fasta` (previously failed when invoked
+  from the pipeline CWD).
+- Removed the last hardcoded `/home/jilin/...` server paths: the reproduce
+  scripts now take the benchmark DB / output dir / extra sys.path from env vars
+  (`TCR_BENCHMARK_DB`, `TCR_BENCHMARK_OUT`, `TCR_EXTRA_PATHS`) instead of
+  machine-specific defaults.
+
+### Notes
+- Verified on the target Linux host: after a simulated install, GIANA clusters
+  a tight-motif sample (4 assignments) and TCRMatch runs against the real IEDB
+  data, both via auto-discovery with no `TCR_*` env vars set. `pytest
+  tests/test_backends.py` passes (10 tests, no network).
+
 ## [1.0.1] - 2026-06-29
 
 ### Fixed

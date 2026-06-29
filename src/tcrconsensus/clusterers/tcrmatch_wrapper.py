@@ -88,24 +88,33 @@ class TCRMatchWrapper(BaseClusterer):
         output_dir = workdir / "tcrmatch_output"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        binary = (
-            self.tcrmatch_bin
-            or os.environ.get("TCR_TCRMATCH_BIN")
-            or shutil.which("tcrmatch")
-        )
+        binary = self.tcrmatch_bin or os.environ.get("TCR_TCRMATCH_BIN")
+        if not binary:
+            from ..backends import tcrmatch_bin_path
+            cand = tcrmatch_bin_path()
+            if cand.exists():
+                binary = str(cand)
+        if not binary:
+            binary = shutil.which("tcrmatch")
         if not binary:
             raise FileNotFoundError(
-                "TCRMatch binary not found. Pass tcrmatch_bin=... to "
-                "TCRMatchWrapper, set the TCR_TCRMATCH_BIN environment "
-                "variable, or install the `tcrmatch` binary on PATH."
+                "TCRMatch binary not found. Run `tcrconsensus install-backends "
+                "--tcrmatch`, pass tcrmatch_bin=... to TCRMatchWrapper, set the "
+                "TCR_TCRMATCH_BIN environment variable, or install the `tcrmatch` "
+                "binary on PATH."
             )
 
         iedb_db = self.iedb_db or os.environ.get("TCR_TCRMATCH_IEDB")
         if not iedb_db:
+            from ..backends import tcrmatch_iedb_path
+            cand = tcrmatch_iedb_path()
+            if cand.exists():
+                iedb_db = str(cand)
+        if not iedb_db:
             iedb_db = prepared_input
             logger.warning(
-                "IEDB database not configured (set TCR_TCRMATCH_IEDB); "
-                "using self-comparison"
+                "IEDB database not configured (run `tcrconsensus install-backends "
+                "--tcrmatch` or set TCR_TCRMATCH_IEDB); using self-comparison"
             )
         elif not Path(iedb_db).exists():
             iedb_db = prepared_input

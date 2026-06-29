@@ -370,5 +370,82 @@ def benchmark(input_path, output):
     click.echo(json.dumps(result, indent=2, default=str))
 
 
+@cli.command("install-backends")
+@click.option("--giana", is_flag=True, help="Install GIANA (clone github.com/s175573/GIANA).")
+@click.option("--tcrmatch", is_flag=True, help="Install TCRMatch (clone + make + IEDB data).")
+@click.option("--gliph2", is_flag=True, help="Install GLIPH2 (clone clusTCR for the irtools binary + reference).")
+@click.option("--all", "all_", is_flag=True, help="Install all supported backends (default).")
+@click.option(
+    "--dir", "dir_",
+    default=None,
+    help="Backends directory (default: $TCRCONS_BACKEND_DIR or "
+         "~/.local/share/tcrconsensus/backends).",
+)
+@click.option("--force", is_flag=True, help="Reinstall even if already present.")
+@click.option("--dry-run", is_flag=True, help="Print install commands without executing them.")
+def install_backends(giana, tcrmatch, gliph2, all_, dir_, force, dry_run):
+    """Download and build external clustering backends on this machine.
+
+    GIANA, TCRMatch and GLIPH2 use non-commercial licenses (GIANA:
+    academic-only; TCRMatch: Non-Profit OSL 3.0; GLIPH2's irtools: academic-use,
+    bundled inside clusTCR) and ship as source / compiled binaries + reference
+    data, so they cannot be bundled in the pip package. This command fetches and
+    builds them locally (you, the user, pull directly from upstream — the
+    license-clean path). After install, the wrappers discover them automatically;
+    no environment variables are required.
+
+    Requires: git and network access. TCRMatch additionally needs g++ (OpenMP);
+    GLIPH2's irtools is a Linux-only binary.
+    """
+    from ..backends import backends_dir, install_giana, install_gliph2, install_tcrmatch
+
+    if not (giana or tcrmatch or gliph2 or all_):
+        all_ = True
+    targets = []
+    if all_ or giana:
+        targets.append("giana")
+    if all_ or tcrmatch:
+        targets.append("tcrmatch")
+    if all_ or gliph2:
+        targets.append("gliph2")
+
+    base = backends_dir(dir_)
+    click.echo(f"Backends directory: {base}")
+    if dry_run:
+        click.echo("(dry-run: commands below are printed, not executed)")
+
+    failures = 0
+    if "giana" in targets:
+        try:
+            script = install_giana(base, force=force, dry_run=dry_run)
+            click.echo(f"  GIANA script: {script}")
+        except Exception as e:  # noqa: BLE001 - report, don't abort the whole run
+            click.echo(f"  GIANA FAILED: {e}", err=True)
+            failures += 1
+    if "tcrmatch" in targets:
+        try:
+            binary, iedb = install_tcrmatch(base, force=force, dry_run=dry_run)
+            click.echo(f"  TCRMatch binary:   {binary}")
+            click.echo(f"  TCRMatch IEDB data: {iedb}")
+        except Exception as e:  # noqa: BLE001
+            click.echo(f"  TCRMatch FAILED: {e}", err=True)
+            failures += 1
+    if "gliph2" in targets:
+        try:
+            lib = install_gliph2(base, force=force, dry_run=dry_run)
+            click.echo(f"  GLIPH2 lib (irtools+ref): {lib}")
+        except Exception as e:  # noqa: BLE001
+            click.echo(f"  GLIPH2 FAILED: {e}", err=True)
+            failures += 1
+
+    if not dry_run and failures == 0 and targets:
+        click.echo(
+            "\nDone. The GIANA/TCRMatch wrappers will auto-discover this "
+            "directory; no TCR_* env vars are needed."
+        )
+    if failures:
+        raise SystemExit(1)
+
+
 if __name__ == "__main__":
     cli()

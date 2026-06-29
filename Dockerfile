@@ -6,7 +6,7 @@ FROM python:3.10-slim
 
 LABEL org.opencontainers.image.title="tcrconsensus"
 LABEL org.opencontainers.image.description="TCR Consensus Clustering Framework"
-LABEL org.opencontainers.image.version="1.0.1"
+LABEL org.opencontainers.image.version="1.1.0"
 
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \

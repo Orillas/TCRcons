@@ -28,19 +28,43 @@ from ..schema.records import ClusterAssignment
 
 logger = logging.getLogger(__name__)
 
+def _gliph2_lib_from_clustcr() -> str | None:
+    """Locate the irtools binary + reference bundle shipped inside the clusTCR
+    package, if clusTCR is installed.
+
+    clusTCR bundles ``irtools.centos`` and the GLIPH2 v2.0 reference files under
+    ``clustcr/modules/gliph2/lib/``. Using that copy avoids redistributing GLIPH2
+    separately (it carries a restrictive academic license).
+    """
+    try:
+        import clustcr  # noqa: F401
+    except Exception:
+        return None
+    cand = Path(clustcr.__file__).resolve().parent / "modules" / "gliph2" / "lib"
+    if cand.is_dir() and any(p.name.startswith("irtools") for p in cand.iterdir()):
+        return str(cand)
+    return None
+
+
 def _resolve_gliph2_lib(gliph2_lib: str | None) -> str:
-    """Resolve the GLIPH2 lib directory (param > env > error).
+    """Resolve the GLIPH2 lib directory (param > env > clusTCR bundle > error).
 
     The lib directory must contain the compiled ``irtools`` binary and the
     GLIPH2 v2.0 reference files (``ref_CD8_v2.0.fa`` etc.).
     """
     lib = gliph2_lib or os.environ.get("TCR_GLIPH2_LIB")
     if not lib:
+        from ..backends import gliph2_lib_path
+        cand = gliph2_lib_path()
+        if cand.is_dir() and any(p.name.startswith("irtools") for p in cand.iterdir()):
+            lib = str(cand)
+    if not lib:
+        lib = _gliph2_lib_from_clustcr()
+    if not lib:
         raise FileNotFoundError(
-            "GLIPH2 lib directory not configured. Pass gliph2_lib=... to "
-            "GLIPH2Wrapper or set the TCR_GLIPH2_LIB environment variable "
-            "(the directory holding the compiled irtools binary and the "
-            "GLIPH2 v2.0 reference files)."
+            "GLIPH2 lib directory not configured. Run `tcrconsensus install-backends "
+            "--gliph2`, set TCR_GLIPH2_LIB to a directory holding the irtools binary "
+            "and GLIPH2 v2.0 reference files, or pass gliph2_lib=... to GLIPH2Wrapper."
         )
     return lib
 

@@ -154,15 +154,20 @@ class GIANAWrapper(BaseClusterer):
             output_dir = workdir / "giana_output"
             output_dir.mkdir(parents=True, exist_ok=True)
 
-            # ---- Locate GIANA script (param > env > PATH > error) ----
+            # ---- Locate GIANA script (param > env > backends dir > PATH > error) ----
             script = self.giana_script or os.environ.get("TCR_GIANA_SCRIPT")
+            if not script:
+                from ..backends import giana_script_path
+                cand = giana_script_path()
+                if cand.exists():
+                    script = str(cand)
             if not script:
                 script = shutil.which("GIANA4.1.py") or shutil.which("giana")
             if not script:
                 raise FileNotFoundError(
-                    "GIANA script not found. Pass giana_script=... to "
-                    "GIANAWrapper, set the TCR_GIANA_SCRIPT environment "
-                    "variable, or place GIANA4.1.py on PATH."
+                    "GIANA script not found. Run `tcrconsensus install-backends "
+                    "--giana`, pass giana_script=... to GIANAWrapper, set the "
+                    "TCR_GIANA_SCRIPT environment variable, or place GIANA4.1.py on PATH."
                 )
 
             # ---- Build command ----
@@ -182,8 +187,12 @@ class GIANAWrapper(BaseClusterer):
             logger.info(f"GIANA command: {' '.join(cmd)}")
 
             # ---- Execute ----
+            # GIANA4.1.py reads its bundled Imgt_Human_TRBV.fasta and writes
+            # ./VgeneScores.txt relative to its CWD, so run it from the script's
+            # own directory (not the pipeline CWD).
             result = subprocess.run(
                 cmd,
+                cwd=str(Path(script).resolve().parent),
                 capture_output=True,
                 text=True,
                 timeout=7200,

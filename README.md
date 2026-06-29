@@ -63,6 +63,28 @@ and raises a clear, actionable error if none is found.
 
 #### Manual backend setup
 
+**GIANA** and **TCRMatch** are fetched and built on your machine by a single
+helper. They carry non-commercial licenses (GIANA: UT Southwestern,
+academic-research-only; TCRMatch: Non-Profit OSL 3.0) and so cannot be bundled
+in this MIT package — *tcrconsensus never redistributes their binaries or the
+IEDB reference data*; you pull them directly from upstream, which is the
+license-clean path:
+
+```bash
+tcrconsensus install-backends --giana        # clones github.com/s175573/GIANA (pure Python)
+tcrconsensus install-backends --tcrmatch     # clones github.com/IEDB/TCRMatch, builds (g++),
+                                             #   and fetches the IEDB reference TSV
+tcrconsensus install-backends --gliph2       # clones github.com/svalkiers/clusTCR for the
+                                             #   irtools binary + GLIPH2 v2.0 reference (Linux)
+tcrconsensus install-backends --all          # all three
+tcrconsensus install-backends --dry-run      # print the commands without executing
+```
+
+After install, the GIANA and TCRMatch wrappers auto-discover the backends
+directory (`$TCRCONS_BACKEND_DIR`, or `~/.local/share/tcrconsensus/backends` by
+default) — **no environment variables required**. TCRMatch needs `g++` (OpenMP)
+and network access for the IEDB data download.
+
 **clusTCR** is not published to PyPI, and its `setup.py` pins `scipy==1.8`, which
 conflicts with tcrconsensus's `scipy>=1.9`. Install from source **without**
 re-pinning scipy:
@@ -71,12 +93,12 @@ re-pinning scipy:
 pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
 ```
 
-**GLIPH2 / TCRMatch** are compiled binaries (GLIPH2: Huang *et al.*, Nat.
-Biotechnol. 2020; TCRMatch: Li *et al.*). Build or obtain the upstream binary,
-then point the wrapper at it via the env vars above. **GIANA** is a Python
-script — clone `github.com/s175573/GIANA` and set `TCR_GIANA_SCRIPT` to
-`GIANA4.1.py`. TCRMatch additionally needs an IEDB database
-(`TCR_TCRMATCH_IEDB`); if unset it falls back to self-comparison.
+**GLIPH2** is a compiled `irtools` binary (Huang *et al.*, Nat. Biotechnol.
+2020). It is bundled inside a clusTCR *source checkout*
+(`clustcr/modules/gliph2/lib/`; note: a pip-installed clusTCR does not ship it).
+`install-backends --gliph2` clones clusTCR to provide it; after that the wrapper
+auto-discovers it, or you can set `TCR_GLIPH2_LIB` manually. (The `irtools`
+binary is Linux-only.)
 
 ## Quick Start
 

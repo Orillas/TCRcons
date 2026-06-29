@@ -5,7 +5,7 @@ title: "tcrconsensus"
 authors:
   - name: "TCR-Consensus Team"
 type: software
-version: "1.0.1"
+version: "1.1.0"
 date-released: "2026-06-29"
 license: MIT
 repository-code: "https://github.com/Orillas/TCRcons"

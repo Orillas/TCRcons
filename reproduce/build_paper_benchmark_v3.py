@@ -32,8 +32,10 @@ from datetime import datetime
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-DB = "/home/jilin/DeepTCR/i3-unit-TCR_Unsupervised_Benchmark-469696e/Data/Database/database_pooled_human_2023_03_15.txt"
-DEFAULT_OUT = "/home/jilin/DeepTCR/tcrconsensus/results/paper_benchmark"
+# Resolve via env vars (no machine-specific defaults). The pooled DB is external
+# data: set TCR_BENCHMARK_DB (or pass --db) to point at it.
+DB = os.environ.get("TCR_BENCHMARK_DB", "database_pooled_human_2023_03_15.txt")
+DEFAULT_OUT = os.environ.get("TCR_BENCHMARK_OUT", "paper_benchmark")
 
 # Specific pairs to remove (from paper's R script)
 REMOVE_PAIRS = [
