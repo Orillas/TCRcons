@@ -2,20 +2,28 @@
 
 **Scenario-adaptive TCR specificity consensus clustering framework.**
 
-Combines multiple TCR clustering methods (clusTCR, GLIPH2, tcrdist3, Hamming distance baseline) via weighted co-association consensus. Automatically profiles input data, selects optimal method combinations, and produces refined consensus clusters with confidence scores.
+Combines seven TCR clustering methods (clusTCR, GLIPH2, tcrdist3, GIANA, TCRMatch, DeepTCR, Hamming baseline) via weighted co-association consensus, plus a built-in Levenshtein edit-distance baseline. Automatically profiles input data, selects optimal method combinations, and produces refined consensus clusters with confidence scores.
 
 ## Installation
 
 ```bash
-# Core (no external clusterers)
+# Core (built-in: hd_baseline + levenshtein)
 pip install .
 
-# With clusTCR + tcrdist3
+# Add the two cleanly pip-installable backends (tcrdist3, DeepTCR)
 pip install ".[clusterers]"
+
+# Or install a single backend
+pip install ".[tcrdist3]"   # or:  pip install ".[deeptcr]"
 
 # Development
 pip install ".[dev]"
 ```
+
+> A single `pip install ".[clusterers]"` covers four of the eight methods
+> (`hd_baseline`, `levenshtein`, `tcrdist3`, `DeepTCR`). `clusTCR`, `GLIPH2`,
+> `GIANA`, and `TCRMatch` cannot be pip-installed — see
+> [Manual backend setup](#manual-backend-setup).
 
 ### Requirements
 
@@ -24,18 +32,49 @@ pip install ".[dev]"
 
 ### Clustering Methods
 
-tcrconsensus aggregates seven TCR clustering methods. `hd_baseline` is built in;
-the rest are optional backends — install the ones you intend to use.
+tcrconsensus aggregates seven TCR clustering methods, plus a built-in edit-distance
+baseline. `hd_baseline` and `levenshtein` ship with the package (no install). Of the
+remaining six, only **tcrdist3** and **DeepTCR** install cleanly via pip —
+`pip install ".[clusterers]"` brings in both. The other four (`clusTCR`, `GLIPH2`,
+`GIANA`, `TCRMatch`) cannot be pip-installed and must be set up manually
+(see [Manual backend setup](#manual-backend-setup)).
 
-| Method | Backend | Install |
-|--------|---------|---------|
-| Hamming baseline | built-in | — |
-| clusTCR | Python package | `pip install clustcr` |
-| tcrdist3 | Python package | `pip install tcrdist3` |
-| DeepTCR | Python package (TensorFlow; optional GPU) | `pip install DeepTCR` |
-| GLIPH2 | external binary (subprocess) | on `PATH` |
-| GIANA | external binary (subprocess) | on `PATH` |
-| TCRMatch | external binary (subprocess) | on `PATH` |
+| Method | Type | Install source | Wrapper resolution |
+|--------|------|----------------|--------------------|
+| Hamming baseline | built-in (pure Python) | — | always available |
+| Levenshtein baseline | built-in (pure Python) | — | always available |
+| tcrdist3 | Python pkg (needs `parasail`, C) | `pip install ".[tcrdist3]"` | `import tcrdist3` |
+| DeepTCR | Python pkg (TensorFlow; GPU optional) | `pip install ".[deeptcr]"` | `import DeepTCR` |
+| clusTCR | Python pkg, **not on PyPI** | clone + install (manual) | `import clustcr` |
+| GLIPH2 | `irtools` binary + v2.0 ref DB | upstream binary (manual) | `TCR_GLIPH2_LIB` → `PATH` |
+| GIANA | standalone `GIANA4.1.py` script | `github.com/s175573/GIANA` | `TCR_GIANA_SCRIPT` → `PATH` |
+| TCRMatch | C++ binary | upstream binary (manual) | `TCR_TCRMATCH_BIN` → `PATH` |
+
+For every external method the wrapper resolves its binary/script as:
+constructor argument → `TCR_*` environment variable → `PATH` (`shutil.which`),
+and raises a clear, actionable error if none is found.
+
+> **DeepTCR build caveat:** DeepTCR ships as an sdist whose `setup.py` calls
+> `nvidia-smi` during install. On a GPU-less host `pip install ".[deeptcr]"` can
+> therefore fail at build time — install on a CUDA machine, or pre-install
+> TensorFlow and run `pip install DeepTCR --no-deps`.
+
+#### Manual backend setup
+
+**clusTCR** is not published to PyPI, and its `setup.py` pins `scipy==1.8`, which
+conflicts with tcrconsensus's `scipy>=1.9`. Install from source **without**
+re-pinning scipy:
+
+```bash
+pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
+```
+
+**GLIPH2 / TCRMatch** are compiled binaries (GLIPH2: Huang *et al.*, Nat.
+Biotechnol. 2020; TCRMatch: Li *et al.*). Build or obtain the upstream binary,
+then point the wrapper at it via the env vars above. **GIANA** is a Python
+script — clone `github.com/s175573/GIANA` and set `TCR_GIANA_SCRIPT` to
+`GIANA4.1.py`. TCRMatch additionally needs an IEDB database
+(`TCR_TCRMATCH_IEDB`); if unset it falls back to self-comparison.
 
 ## Quick Start
 

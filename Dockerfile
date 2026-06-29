@@ -6,7 +6,7 @@ FROM python:3.10-slim
 
 LABEL org.opencontainers.image.title="tcrconsensus"
 LABEL org.opencontainers.image.description="TCR Consensus Clustering Framework"
-LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.version="1.0.1"
 
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -18,23 +18,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-# Install optional clusterers
-RUN pip install --no-cache-dir \
-    clustcr \
-    pygliph \
-    tcrdist3 \
-    faiss-cpu \
-    biopython
-
-# DeepTCR is heavy (TensorFlow) — install only if needed
-# RUN pip install --no-cache-dir DeepTCR
-
 # Copy package
 COPY . /app/tcrconsensus
 WORKDIR /app/tcrconsensus
 
-# Install tcrconsensus
-RUN pip install -e .
+# Install tcrconsensus + the CPU-installable backend (tcrdist3; needs the
+# build-essential toolchain already installed above for the parasail C lib).
+RUN pip install -e ".[tcrdist3]"
+
+# DeepTCR (TensorFlow) — its sdist calls `nvidia-smi` at build time, so it only
+# builds on a CUDA-capable host. Uncomment there:
+#   RUN pip install ".[deeptcr]"
+# clusTCR is NOT on PyPI and pins scipy==1.8 (conflicts with scipy>=1.9); add
+# manually if needed:
+#   RUN pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
+# GLIPH2 / GIANA / TCRMatch are external binaries — configure via TCR_* env vars.
 
 # Entry point
 ENTRYPOINT ["tcrconsensus"]

@@ -8,13 +8,15 @@ scipy>=1.9
 scikit-learn>=1.1
 matplotlib>=3.6
 
-# Optional clusterer backends
-# clustcr>=1.0       # Fast Faiss+MCL clustering
-# pygliph>=2.0       # GLIPH2 Python API
-# tcrdist3>=3.2      # Biochemical distance-based
-# faiss-cpu>=1.7     # GPU-free FAISS (for GIANA)
-# biopython>=1.80    # For GIANA sequence alignment
-# DeepTCR>=2.1       # Deep learning VAE (heavy: depends on tensorflow)
+# Optional clusterer backends — install via the pyproject extras, NOT by
+# uncommenting here (several are not pip-installable from PyPI):
+#   pip install ".[tcrdist3]"   # tcrdist3>=0.3 (needs a parasail C build)
+#   pip install ".[deeptcr]"    # DeepTCR (TensorFlow; sdist probes nvidia-smi)
+#   pip install ".[clusterers]" # both of the above
+# clusTCR is NOT on PyPI and pins scipy==1.8 — install manually:
+#   pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
+# GLIPH2 / GIANA / TCRMatch are external binaries (TCR_*_LIB / TCR_*_SCRIPT /
+# TCR_*_BIN env vars), not pip packages.
 
 # Development
 pytest>=7.0

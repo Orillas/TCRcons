@@ -2,7 +2,7 @@
   "title": "tcrconsensus: Scenario-adaptive TCR specificity consensus clustering",
   "description": "Ensemble consensus clustering framework for T-cell receptor (TCR) specificity. tcrconsensus aggregates multiple specificity-clustering methods into a consensus via weighted pairwise support and connected-component refinement, with calibration and signed-repulsion refinements.",
   "upload_type": "software",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "access_right": "open",
   "license": "MIT",
   "keywords": ["TCR", "T-cell receptor", "clustering", "consensus", "specificity", "bioinformatics"],

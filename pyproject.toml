@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tcrconsensus"
-version = "1.0.0"
+version = "1.0.1"
 description = "Scenario-adaptive TCR specificity consensus clustering framework"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,10 +24,21 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-clusterers = [
-    "clustcr>=1.0",
-    "tcrdist3>=3.2",
-]
+# Opt-in clustering backends. Each pulls heavy / platform-specific dependencies,
+# so none are installed by default. See README "Optional clustering backends"
+# for install sources, version caveats, and the external-binary methods (clustcr,
+# GLIPH2, GIANA, TCRMatch) which CANNOT be pip-installed and must be configured
+# manually via the TCR_*_LIB / TCR_*_SCRIPT / TCR_*_BIN environment variables.
+tcrdist3 = ["tcrdist3>=0.3"]
+# DeepTCR is sdist-only; its setup.py probes `nvidia-smi` at build time, so
+# `pip install ".[deeptcr]"` can FAIL on GPU-less hosts. Install on a CUDA
+# machine, or pre-install TensorFlow and use `pip install DeepTCR --no-deps`.
+deeptcr = ["DeepTCR"]
+# Umbrella: every backend that installs cleanly via pip. clustcr is intentionally
+# excluded — it pins scipy==1.8 in its setup.py, which conflicts with this
+# package's scipy>=1.9; install clustcr manually (see README). GLIPH2 / GIANA /
+# TCRMatch are external binaries, also manual.
+clusterers = ["tcrdist3>=0.3", "DeepTCR"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
