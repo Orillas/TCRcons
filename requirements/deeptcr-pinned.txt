@@ -1,0 +1,39 @@
+# DeepTCR pinned dependencies — reproducible install matching the verified .venv
+#
+# Usage: install DeepTCR with --no-deps, then pin deps from this file:
+#   pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
+#   pip install -r requirements/deeptcr-pinned.txt
+#
+# DeepTCR v2.1.29 — verified working on Linux x86_64 (CUDA), 2026-06-30.
+# Some versions below override DeepTCR's own requirements.txt stricts pins
+# (e.g. tensorflow 2.15.1 vs its 2.12.0) — this is deliberate.
+
+# --- Deep Learning ---
+tensorflow==2.15.1
+keras==2.15.0
+tensorboard==2.15.2
+
+# --- Core Scientific ---
+numpy==1.23.5
+pandas==1.5.3
+scipy==1.10.1
+scikit-learn==1.2.2
+h5py==3.8.0
+
+# --- Visualization ---
+matplotlib==3.7.2
+seaborn==0.13.2
+logomaker==0.8
+
+# --- Analysis Tools ---
+umap-learn==0.5.5
+networkx>=3.1
+distinctipy==1.2.1
+python-louvain>=0.16
+numba>=0.60.0
+
+# --- Utilities ---
+tqdm==4.66.4
+psutil>=7.0.0
+pillow>=10.0.0
+biopython==1.76

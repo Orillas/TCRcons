@@ -69,6 +69,15 @@ uv pip install ".[deeptcr]"      # DeepTCR only
 > DeepTCR pins **its own** stack on every platform (`tensorflow==2.12.0` on
 > Linux; `tensorflow-macos==2.12.0` + `tensorflow-metal` on Apple Silicon), so
 > the extra does not re-pin TensorFlow — let DeepTCR manage it.
+>
+> For **reproducible installs** with pinned dependency versions matching a
+> verified working DeepTCR environment (TF 2.15.1, Keras 2.15.0, etc.), use
+> the two-step `--no-deps` workflow:
+> ```bash
+> pip install --no-deps ".[deeptcr]"
+> pip install -r requirements/deeptcr-pinned.txt
+> ```
+> See `requirements/deeptcr-pinned.txt` for the full version table.
 
 ### 3 · External binary backends — `install-backends` (`GLIPH2`, `GIANA`, `TCRMatch`)
 
