@@ -11,6 +11,27 @@ Combines seven TCR clustering methods (clusTCR, GLIPH2, tcrdist3, GIANA, TCRMatc
 tcrconsensus is **not yet on PyPI** — install from GitHub. It needs **Python ≥ 3.10**.
 The eight clustering methods are unlocked in tiers: install only what you need.
 
+### Recommended: manage the environment with uv
+
+[uv](https://docs.astral.sh/uv/) gives fast, isolated, reproducible installs —
+especially helpful for the heavy TensorFlow backend. **Create a virtual
+environment first, then run the install steps below inside it.** Every
+`pip install ...` in this guide can be replaced with `uv pip install ...`:
+
+```bash
+# one-time uv install
+curl -LsSf https://astral.sh/uv/install.sh | sh    # macOS/Linux
+#   pip install uv          # alternative
+#   brew install uv         # alternative (Homebrew, macOS)
+
+# create + activate a venv (Python 3.10+)
+uv venv --python 3.10
+source .venv/bin/activate        # Windows PowerShell: .venv\Scripts\Activate.ps1
+
+# then install — e.g. the core package:
+uv pip install git+https://github.com/Orillas/TCRcons.git
+```
+
 ### Prerequisites
 
 | Requirement | Needed for | Notes |
