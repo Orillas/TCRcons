@@ -8,60 +8,51 @@ Combines seven TCR clustering methods (clusTCR, GLIPH2, tcrdist3, GIANA, TCRMatc
 
 ## Installation
 
-tcrconsensus is **not yet on PyPI** — install from GitHub. It needs **Python ≥ 3.10**.
+tcrconsensus is **not yet on PyPI** — install from GitHub. This guide uses
+[**uv**](https://docs.astral.sh/uv/) for fast, isolated, reproducible installs;
+plain `pip` works too (see [No uv?](#no-uv-plain-pip) at the end).
+
 The eight clustering methods are unlocked in tiers: install only what you need.
-
-### Recommended: manage the environment with uv
-
-[uv](https://docs.astral.sh/uv/) gives fast, isolated, reproducible installs —
-especially helpful for the heavy TensorFlow backend. **Create a virtual
-environment first, then run the install steps below inside it.** Every
-`pip install ...` in this guide can be replaced with `uv pip install ...`:
-
-```bash
-# one-time uv install
-curl -LsSf https://astral.sh/uv/install.sh | sh    # macOS/Linux
-#   pip install uv          # alternative
-#   brew install uv         # alternative (Homebrew, macOS)
-
-# create + activate a venv (Python 3.10+)
-uv venv --python 3.10
-source .venv/bin/activate        # Windows PowerShell: .venv\Scripts\Activate.ps1
-
-# then install — e.g. the core package:
-uv pip install git+https://github.com/Orillas/TCRcons.git
-```
 
 ### Prerequisites
 
 | Requirement | Needed for | Notes |
 |---|---|---|
-| Python ≥ 3.10 | everything | |
-| pip ≥ 21.1 | extras from a git URL | supports the `name[extras] @ url` syntax |
+| uv | environment + installs | `curl -LsSf https://astral.sh/uv/install.sh \| sh` — also fetches Python |
 | git | source install + `install-backends` | |
 | C/C++ toolchain (gcc/g++) | tcrdist3 (`parasail`), TCRMatch (`make`) | parasail has wheels on common platforms |
 | CUDA toolkit | DeepTCR on GPU | optional; CPU works without it |
+
+### 0 · Create an isolated environment with uv
+
+```bash
+uv venv --python 3.10                         # creates .venv with Python 3.10
+# (optional) source .venv/bin/activate        # Windows: .venv\Scripts\Activate.ps1
+```
+
+All following `uv pip install` and `uv run` commands target this `.venv`
+automatically — no activation required.
 
 ### 1 · Core install — built-in methods (`hd_baseline`, `levenshtein`)
 
 ```bash
 # direct from GitHub, no clone:
-pip install git+https://github.com/Orillas/TCRcons.git
+uv pip install git+https://github.com/Orillas/TCRcons.git
 # …or clone and install locally:
-git clone https://github.com/Orillas/TCRcons.git && cd TCRcons && pip install .
+git clone https://github.com/Orillas/TCRcons.git && cd TCRcons && uv pip install .
 ```
 
 This is enough to run the consensus engine with the two built-in baselines.
 
-### 2 · Optional Python backends — pip extras (`tcrdist3`, `DeepTCR`)
+### 2 · Optional Python backends — extras (`tcrdist3`, `DeepTCR`)
 
 ```bash
 # both, from a git URL:
-pip install "tcrconsensus[clusterers] @ git+https://github.com/Orillas/TCRcons.git"
+uv pip install "tcrconsensus[clusterers] @ git+https://github.com/Orillas/TCRcons.git"
 # …or from a local clone:
-pip install ".[clusterers]"   # tcrdist3 + DeepTCR
-pip install ".[tcrdist3]"     # tcrdist3 only
-pip install ".[deeptcr]"      # DeepTCR only
+uv pip install ".[clusterers]"   # tcrdist3 + DeepTCR
+uv pip install ".[tcrdist3]"     # tcrdist3 only
+uv pip install ".[deeptcr]"      # DeepTCR only
 ```
 
 | Extra | Installs | Notes |
@@ -71,9 +62,9 @@ pip install ".[deeptcr]"      # DeepTCR only
 | `clusterers` | both of the above | umbrella |
 
 > **DeepTCR build caveat** — DeepTCR ships as an sdist whose `setup.py` calls
-> `nvidia-smi` during install, so `pip install ".[deeptcr]"` can fail on a
+> `nvidia-smi` during install, so `uv pip install ".[deeptcr]"` can fail on a
 > GPU-less machine. Install on a CUDA host, or pre-install TensorFlow then run
-> `pip install DeepTCR --no-deps`.
+> `uv pip install DeepTCR --no-deps`.
 
 ### 3 · External binary backends — `install-backends` (`GLIPH2`, `GIANA`, `TCRMatch`)
 
@@ -85,12 +76,12 @@ builds them **on your machine** — you pull directly from upstream, the
 license-clean path; tcrconsensus never redistributes them:
 
 ```bash
-tcrconsensus install-backends --giana        # clone github.com/s175573/GIANA   (pure Python)
-tcrconsensus install-backends --tcrmatch     # clone github.com/IEDB/TCRMatch → make → IEDB ref data
-tcrconsensus install-backends --gliph2       # clone github.com/svalkiers/clusTCR for irtools + ref
-tcrconsensus install-backends --all          # all three
-tcrconsensus install-backends --dir /opt/tcr # custom backends dir (default ~/.local/share/tcrconsensus/backends)
-tcrconsensus install-backends --dry-run      # print the commands without running
+uv run tcrconsensus install-backends --giana        # clone github.com/s175573/GIANA   (pure Python)
+uv run tcrconsensus install-backends --tcrmatch     # clone github.com/IEDB/TCRMatch → make → IEDB ref data
+uv run tcrconsensus install-backends --gliph2       # clone github.com/svalkiers/clusTCR for irtools + ref
+uv run tcrconsensus install-backends --all          # all three
+uv run tcrconsensus install-backends --dir /opt/tcr # custom backends dir (default ~/.local/share/tcrconsensus/backends)
+uv run tcrconsensus install-backends --dry-run      # print the commands without running
 ```
 
 After install the wrappers **auto-discover** the backends directory
@@ -111,22 +102,23 @@ conflicts with tcrconsensus's `scipy>=1.9`. Install from source **without**
 re-pinning scipy:
 
 ```bash
-pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
+uv pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
 ```
 
 ### 5 · Verify what is installed
 
 ```bash
-python -c "from tcrconsensus import TCRConsensus; print(TCRConsensus(mode='auto').available_methods)"
+uv run python -c "from tcrconsensus import TCRConsensus; print(TCRConsensus(mode='auto').available_methods)"
 ```
 
 ### One-shot full setup — all 8 methods
 
 ```bash
+uv venv --python 3.10
 git clone https://github.com/Orillas/TCRcons.git && cd TCRcons
-pip install ".[clusterers]"                                                        # core + tcrdist3 + deeptcr
-pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"     # +clustcr
-tcrconsensus install-backends --all                                                # +gliph2/giana/tcrmatch
+uv pip install ".[clusterers]"                                                        # core + tcrdist3 + deeptcr
+uv pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"     # +clustcr
+uv run tcrconsensus install-backends --all                                            # +gliph2/giana/tcrmatch
 ```
 
 ### Docker
@@ -143,8 +135,19 @@ TCRMatch need `install-backends` inside the container if required.
 ### Development
 
 ```bash
-pip install -e ".[dev]"   # pytest, pytest-cov, build, ruff
-pytest -q
+uv pip install -e ".[dev]"   # pytest, pytest-cov, build, ruff
+uv run pytest -q
+```
+
+### No uv? (plain pip)
+
+Prefer regular `pip`? Create a venv and drop the `uv ` prefix — every command
+above is the same, just `pip …` instead of `uv pip …`, and `python …` /
+`tcrconsensus …` instead of `uv run …`:
+
+```bash
+python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
+pip install ".[clusterers]"
 ```
 
 ### Clustering methods at a glance
@@ -312,9 +315,9 @@ output/
 ## Development
 
 ```bash
-pip install ".[dev]"
-pytest tests/ -v
-pytest tests/ --cov=tcrconsensus
+uv pip install -e ".[dev]"
+uv run pytest tests/ -v
+uv run pytest tests/ --cov=tcrconsensus
 ```
 
 ## Reproducibility & data
