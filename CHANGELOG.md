@@ -6,13 +6,34 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Changed
-- `[deeptcr]` extra now pins the TensorFlow stack to the known-good versions from
-  the reference Linux+CUDA host (`tensorflow==2.15.1`, `keras==2.15.0`,
-  `tensorflow-estimator==2.15.0`, `tensorflow-io-gcs-filesystem==0.37.1`), so
-  `pip install ".[deeptcr]"` reproduces the DeepTCR environment. Removed the
-  duplicate commented block from `requirements.txt` (the extra is now the single
-  source of truth).
+## [1.1.1] - 2026-06-30
+
+### Fixed
+- `[deeptcr]` and `[clusterers]` were uninstallable on most hosts. Two causes,
+  both fixed:
+  - **`nvidia-smi` build probe.** The PyPI sdist of DeepTCR calls `nvidia-smi`
+    during build, raising `FileNotFoundError` on any host without an NVIDIA
+    driver — so `pip install ".[deeptcr]"` / `.[clusterers]` failed on every
+    CPU / macOS machine. The extra now installs DeepTCR from its **GitHub
+    source** (`git+https://github.com/sidhomj/DeepTCR.git`); the GitHub
+    `setup.py` has no such probe and builds cleanly on non-CUDA hosts.
+  - **TensorFlow pin conflict.** The previous extra pinned
+    `tensorflow==2.15.1` / `keras==2.15.0`, but DeepTCR's own
+    `requirements.txt` pins `tensorflow==2.12.0` / `keras==2.12.0` on Linux, so
+    the two were mutually exclusive and the resolver failed on Linux. The extra
+    no longer re-pins TensorFlow — DeepTCR manages its own stack on every
+    platform (`tensorflow==2.12.0` on Linux; `tensorflow-macos==2.12.0` +
+    `tensorflow-metal` on Apple Silicon).
+- `requirements.txt`: corrected the `[deeptcr]` hint (it no longer claims a TF
+  pin).
+
+### Notes
+- Verified on an Apple-Silicon mac: `uv pip install ".[deeptcr]"` now succeeds —
+  DeepTCR builds from its GitHub source with no `nvidia-smi` error and imports,
+  with TensorFlow 2.12.0 (`tensorflow-macos`) pulled by DeepTCR itself.
+  `tcrdist3`'s `parasail` has **no arm64 wheel on macOS** and builds from source
+  — install autotools first (`brew install autoconf automake libtool`); Linux
+  and Intel-mac pick up a prebuilt wheel.
 
 ## [1.1.0] - 2026-06-29
 

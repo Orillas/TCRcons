@@ -20,7 +20,7 @@ The eight clustering methods are unlocked in tiers: install only what you need.
 |---|---|---|
 | uv | environment + installs | `curl -LsSf https://astral.sh/uv/install.sh \| sh` — also fetches Python |
 | git | source install + `install-backends` | |
-| C/C++ toolchain (gcc/g++) | tcrdist3 (`parasail`), TCRMatch (`make`) | parasail has wheels on common platforms |
+| C/C++ toolchain (gcc/g++) | tcrdist3 (`parasail`), TCRMatch (`make`) | parasail ships **Linux/Intel-mac wheels**; on **Apple-Silicon mac** it builds from source → `brew install autoconf automake libtool` |
 | CUDA toolkit | DeepTCR on GPU | optional; CPU works without it |
 
 ### 0 · Create an isolated environment with uv
@@ -57,14 +57,18 @@ uv pip install ".[deeptcr]"      # DeepTCR only
 
 | Extra | Installs | Notes |
 |---|---|---|
-| `tcrdist3` | `tcrdist3>=0.3` (+ `parasail`) | imports as **`tcrdist`**; parasail may need a C compiler |
-| `deeptcr` | `DeepTCR` + **TensorFlow 2.15.1** stack | TF pinned to the known-good host versions; ~500 MB |
+| `tcrdist3` | `tcrdist3>=0.3` (+ `parasail`) | imports as **`tcrdist`**; **no `parasail` wheel on Apple-Silicon mac** → `brew install autoconf automake libtool` to build it |
+| `deeptcr` | `DeepTCR` from **git source** | installed from GitHub (not the PyPI sdist — see caveat); DeepTCR pins its own TensorFlow |
 | `clusterers` | both of the above | umbrella |
 
-> **DeepTCR build caveat** — DeepTCR ships as an sdist whose `setup.py` calls
-> `nvidia-smi` during install, so `uv pip install ".[deeptcr]"` can fail on a
-> GPU-less machine. Install on a CUDA host, or pre-install TensorFlow then run
-> `uv pip install DeepTCR --no-deps`.
+> **DeepTCR** — the extra installs DeepTCR from its **GitHub source**
+> (`git+https://github.com/sidhomj/DeepTCR.git`), **not** the PyPI sdist. The
+> published sdist's `setup.py` probes `nvidia-smi` at build time and raises
+> `FileNotFoundError` on any host without an NVIDIA driver; the GitHub `setup.py`
+> has no such probe, so the git URL installs cleanly on CPU/non-CUDA hosts too.
+> DeepTCR pins **its own** stack on every platform (`tensorflow==2.12.0` on
+> Linux; `tensorflow-macos==2.12.0` + `tensorflow-metal` on Apple Silicon), so
+> the extra does not re-pin TensorFlow — let DeepTCR manage it.
 
 ### 3 · External binary backends — `install-backends` (`GLIPH2`, `GIANA`, `TCRMatch`)
 
