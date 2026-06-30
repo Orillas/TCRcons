@@ -44,8 +44,12 @@ _IEDB_DATA_URL = "https://downloads.iedb.org/misc/TCRMatch/IEDB_data.tsv"
 
 
 def backends_dir(override: str | os.PathLike | None = None) -> Path:
-    """Resolve the backends directory: explicit override > ``$TCRCONS_BACKEND_DIR``
-    > ``$XDG_DATA_HOME/tcrconsensus/backends`` > ``~/.local/share/tcrconsensus/backends``.
+    """Resolve the backends directory.
+
+    Priority: explicit override > ``$TCRCONS_BACKEND_DIR``
+    > ``$VIRTUAL_ENV/tcrconsensus/backends`` (uv / pip venv)
+    > ``$XDG_DATA_HOME/tcrconsensus/backends``
+    > ``~/.local/share/tcrconsensus/backends``.
 
     Creates the directory if it does not exist.
     """
@@ -53,6 +57,8 @@ def backends_dir(override: str | os.PathLike | None = None) -> Path:
         path = Path(override).expanduser()
     elif env := os.environ.get(BACKEND_DIR_ENV):
         path = Path(env).expanduser()
+    elif venv := os.environ.get("VIRTUAL_ENV"):
+        path = Path(venv) / "tcrconsensus" / "backends"
     else:
         base = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
         path = Path(base) / "tcrconsensus" / "backends"

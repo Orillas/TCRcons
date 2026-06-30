@@ -84,12 +84,13 @@ uv run tcrconsensus install-backends --giana        # clone github.com/s175573/G
 uv run tcrconsensus install-backends --tcrmatch     # clone github.com/IEDB/TCRMatch → make → IEDB ref data
 uv run tcrconsensus install-backends --gliph2       # clone github.com/svalkiers/clusTCR for irtools + ref
 uv run tcrconsensus install-backends --all          # all three
-uv run tcrconsensus install-backends --dir /opt/tcr # custom backends dir (default ~/.local/share/tcrconsensus/backends)
+uv run tcrconsensus install-backends --dir /opt/tcr # custom backends dir (default: $VIRTUAL_ENV/tcrconsensus/backends or ~/.local/share/tcrconsensus/backends)
 uv run tcrconsensus install-backends --dry-run      # print the commands without running
 ```
 
 After install the wrappers **auto-discover** the backends directory
-(`$TCRCONS_BACKEND_DIR`, or `~/.local/share/tcrconsensus/backends`) — **no
+(`$TCRCONS_BACKEND_DIR`, or `$VIRTUAL_ENV/tcrconsensus/backends`,
+or `~/.local/share/tcrconsensus/backends`) — **no
 `TCR_*` environment variables required**. Needs: `git` (all three), `g++`/OpenMP
 (TCRMatch), and network access (all, for the upstream fetch). `irtools` is
 **Linux-only**.

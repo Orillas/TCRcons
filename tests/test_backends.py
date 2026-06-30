@@ -33,8 +33,16 @@ def test_backends_dir_env_var(tmp_path, monkeypatch):
 
 def test_backends_dir_default_xdg(tmp_path, monkeypatch):
     monkeypatch.delenv(BACKEND_DIR_ENV, raising=False)
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
     assert backends_dir() == tmp_path / "tcrconsensus" / "backends"
+
+
+def test_backends_dir_virtual_env(tmp_path, monkeypatch):
+    monkeypatch.delenv(BACKEND_DIR_ENV, raising=False)
+    monkeypatch.setenv("VIRTUAL_ENV", str(tmp_path / ".venv"))
+    assert backends_dir() == tmp_path / ".venv" / "tcrconsensus" / "backends"
+    assert (tmp_path / ".venv" / "tcrconsensus" / "backends").is_dir()
 
 
 def test_path_layout(tmp_path):

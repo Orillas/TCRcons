@@ -379,6 +379,7 @@ def benchmark(input_path, output):
     "--dir", "dir_",
     default=None,
     help="Backends directory (default: $TCRCONS_BACKEND_DIR or "
+         "$VIRTUAL_ENV/tcrconsensus/backends or "
          "~/.local/share/tcrconsensus/backends).",
 )
 @click.option("--force", is_flag=True, help="Reinstall even if already present.")
