@@ -35,24 +35,41 @@ automatically — no activation required.
 
 ### 1 · Core install — built-in methods (`hd_baseline`, `levenshtein`)
 
+**Recommended — clone first** (gives you access to the requirements files,
+install scripts, and examples):
+
 ```bash
-# direct from GitHub, no clone:
-uv pip install git+https://github.com/Orillas/TCRcons.git
-# …or clone and install locally:
-git clone https://github.com/Orillas/TCRcons.git && cd TCRcons && uv pip install .
+git clone https://github.com/Orillas/TCRcons.git && cd TCRcons
+uv pip install .
 ```
+
+If you prefer to install directly from GitHub without a local clone:
+
+```bash
+uv pip install git+https://github.com/Orillas/TCRcons.git
+```
+
+> **Why clone first?** The DeepTCR reproducible install workflow
+> (`scripts/install-deeptcr-repro.sh`, `requirements/deeptcr-pinned.txt`)
+> and the backend installation commands (`install-backends`) need local
+> files from the repository. A clone gives you everything in one place.
 
 This is enough to run the consensus engine with the two built-in baselines.
 
 ### 2 · Optional Python backends — extras (`tcrdist3`, `DeepTCR`)
 
+From a local clone:
+
 ```bash
-# both, from a git URL:
-uv pip install "tcrconsensus[clusterers] @ git+https://github.com/Orillas/TCRcons.git"
-# …or from a local clone:
 uv pip install ".[clusterers]"   # tcrdist3 + DeepTCR
 uv pip install ".[tcrdist3]"     # tcrdist3 only
-uv pip install ".[deeptcr]"      # DeepTCR only
+uv pip install ".[deeptcr]"      # DeepTCR only (see caveat below)
+```
+
+Without a local clone (direct git URL):
+
+```bash
+uv pip install "tcrconsensus[clusterers] @ git+https://github.com/Orillas/TCRcons.git"
 ```
 
 | Extra | Installs | Notes |
