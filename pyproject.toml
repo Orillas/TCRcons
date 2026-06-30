@@ -34,17 +34,25 @@ tcrdist3 = ["tcrdist3>=0.3"]
 # sdist's setup.py probes `nvidia-smi` during build, so `pip install DeepTCR`
 # from PyPI raises FileNotFoundError on any host without an NVIDIA driver. The
 # GitHub master setup.py has no such probe, so the git URL installs cleanly on
-# CPU/non-CUDA hosts too. DeepTCR pins its OWN stack via requirements.txt
-# (tensorflow==2.12.0 on Linux; its requirements-macos.txt is empty), so this
-# extra does NOT re-pin TensorFlow — doing so would conflict with DeepTCR's own
-# tensorflow pin and make the extra unresolvable on Linux. On macOS, add
-# TensorFlow yourself to run DeepTCR on CPU (e.g. `uv pip install tensorflow`).
-deeptcr = ["DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git"]
+# CPU/non-CUDA hosts too.
+#
+# DeepTCR pins its OWN stack via requirements.txt (Linux):
+#   tensorflow==2.12.0   numpy==1.23.5   scipy==1.10.1
+#   scikit-learn==1.2.2  pandas==1.5.3   keras==2.12.0
+#   matplotlib==3.7.2    seaborn==0.12.2  umap-learn==0.5.5  h5py==3.8.0
+# (requirements-macos.txt is empty — macOS users add TF themselves).
+#
+# We do NOT re-pin TensorFlow here — doing so would conflict with DeepTCR's own
+# tensorflow==2.12.0 pin and make the extra unresolvable on Linux. Let DeepTCR
+# manage its own stack.
+#
+# Pinned to commit 3930ca0 (= DeepTCR v2.1.29, verified working 2026-06-30).
+deeptcr = ["DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"]
 # Umbrella: every backend that installs cleanly via pip. clustcr is intentionally
 # excluded — it pins scipy==1.8 in its setup.py, which conflicts with this
 # package's scipy>=1.9; install clustcr manually (see README). GLIPH2 / GIANA /
 # TCRMatch are external binaries, also manual.
-clusterers = ["tcrdist3>=0.3", "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git"]
+clusterers = ["tcrdist3>=0.3", "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
