@@ -72,7 +72,13 @@ uv pip install ".[deeptcr]"      # DeepTCR only
 >
 > For **reproducible installs** with pinned dependency versions matching a
 > verified working DeepTCR environment (TF 2.15.1, Keras 2.15.0, etc.), use
-> the two-step `--no-deps` workflow:
+> the convenience script:
+> ```bash
+> bash scripts/install-deeptcr-repro.sh            # pip
+> UV=1 bash scripts/install-deeptcr-repro.sh       # uv
+> DRY_RUN=1 bash scripts/install-deeptcr-repro.sh  # preview only
+> ```
+> Or the equivalent two-step workflow:
 > ```bash
 > pip install --no-deps ".[deeptcr]"
 > pip install -r requirements/deeptcr-pinned.txt

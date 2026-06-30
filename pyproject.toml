@@ -45,7 +45,9 @@ tcrdist3 = ["tcrdist3>=0.3"]
 # !! Version conflict with DeepTCR's hard pins !!
 # DeepTCR's setup.py declares tensorflow==2.12.0 / keras==2.12.0 via
 # install_requires. If you need different versions (e.g. TF 2.15.1),
-# install DeepTCR WITH --no-deps and pin manually:
+# use the convenience script:
+#   bash scripts/install-deeptcr-repro.sh
+# or manually:
 #   pip install --no-deps ".[deeptcr]"
 #   pip install -r requirements/deeptcr-pinned.txt
 #
