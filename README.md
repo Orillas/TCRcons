@@ -23,36 +23,36 @@ The eight clustering methods are unlocked in tiers: install only what you need.
 | C/C++ toolchain (gcc/g++) | tcrdist3 (`parasail`), TCRMatch (`make`) | parasail ships **Linux/Intel-mac wheels**; on **Apple-Silicon mac** it builds from source → `brew install autoconf automake libtool` |
 | CUDA toolkit | DeepTCR on GPU | optional; CPU works without it |
 
-### 0 · Create an isolated environment with uv
+### 0 · Create a project-local environment with uv
+
+The virtual environment lives **inside the project directory** — no conflicts
+with other projects or the system Python:
 
 ```bash
-uv venv --python 3.10                         # creates .venv with Python 3.10
-# (optional) source .venv/bin/activate        # Windows: .venv\Scripts\Activate.ps1
+git clone https://github.com/Orillas/TCRcons.git && cd TCRcons       # project root
+uv venv --python 3.10                                                  # creates .venv/ right here
 ```
 
 All following `uv pip install` and `uv run` commands target this `.venv`
 automatically — no activation required.
 
+> **Project isolation** — everything stays together: source code `.venv`,
+> installed backends (`$VIRTUAL_ENV/tcrconsensus/backends`), and any
+> configuration. Delete the project directory and nothing is left behind.
+
 ### 1 · Core install — built-in methods (`hd_baseline`, `levenshtein`)
 
-**Recommended — clone first** (gives you access to the requirements files,
-install scripts, and examples):
-
 ```bash
-git clone https://github.com/Orillas/TCRcons.git && cd TCRcons
-uv pip install .
+uv pip install .          # installs tcrconsensus into the project-local .venv
 ```
 
-If you prefer to install directly from GitHub without a local clone:
+This is enough to run the consensus engine with the two built-in baselines.
+
+If you prefer to install directly from GitHub **without** a local clone:
 
 ```bash
 uv pip install git+https://github.com/Orillas/TCRcons.git
 ```
-
-> **Why clone first?** The DeepTCR reproducible install workflow
-> (`scripts/install-deeptcr-repro.sh`, `requirements/deeptcr-pinned.txt`)
-> and the backend installation commands (`install-backends`) need local
-> files from the repository. A clone gives you everything in one place.
 
 This is enough to run the consensus engine with the two built-in baselines.
 
