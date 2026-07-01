@@ -62,46 +62,42 @@ This is enough to run the consensus engine with the two built-in baselines.
 From a local clone:
 
 ```bash
-uv pip install ".[clusterers]"   # tcrdist3 + DeepTCR
-uv pip install ".[tcrdist3]"     # tcrdist3 only
-uv pip install ".[deeptcr]"      # DeepTCR only (see caveat below)
+uv pip install ".[tcrdist3]"     # tcrdist3 (see note below)
 ```
 
-Without a local clone (direct git URL):
+**DeepTCR** — use the two-step workflow (recommended) for a reproducible pinned
+environment (TF 2.15.1, Keras 2.15.0, numpy 1.23.5):
 
 ```bash
-uv pip install "tcrconsensus[clusterers] @ git+https://github.com/Orillas/TCRcons.git"
+pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
+pip install -r requirements/deeptcr-pinned.txt
 ```
 
-| Extra | Installs | Notes |
-|---|---|---|
-| `tcrdist3` | `tcrdist3>=0.3` (+ `parasail`) | imports as **`tcrdist`**; **no `parasail` wheel on Apple-Silicon mac** → `brew install autoconf automake libtool` to build it |
-| `deeptcr` | `DeepTCR` from **git source** | installed from GitHub (not the PyPI sdist — see caveat); DeepTCR pins its own TensorFlow |
-| `clusterers` | both of the above | umbrella |
+Or the equivalent convenience script:
 
-> **DeepTCR** — the extra installs DeepTCR from its **GitHub source**
-> (`git+https://github.com/sidhomj/DeepTCR.git`), **not** the PyPI sdist. The
-> published sdist's `setup.py` probes `nvidia-smi` at build time and raises
-> `FileNotFoundError` on any host without an NVIDIA driver; the GitHub `setup.py`
-> has no such probe, so the git URL installs cleanly on CPU/non-CUDA hosts too.
-> DeepTCR pins **its own** stack on every platform (`tensorflow==2.12.0` on
-> Linux; `tensorflow-macos==2.12.0` + `tensorflow-metal` on Apple Silicon), so
-> the extra does not re-pin TensorFlow — let DeepTCR manage it.
+```bash
+bash scripts/install-deeptcr-repro.sh            # pip
+UV=1 bash scripts/install-deeptcr-repro.sh       # uv
+DRY_RUN=1 bash scripts/install-deeptcr-repro.sh  # preview only
+```
+
+> **Why two steps?** The published PyPI sdist of DeepTCR probes `nvidia-smi` at
+> build time and raises `FileNotFoundError` on any host without an NVIDIA driver.
+> Installing from the **GitHub source** with `--no-deps` avoids this probe, then
+> the pinned requirements provide a verified dependency set. See
+> `requirements/deeptcr-pinned.txt` for the full version table.
 >
-> For **reproducible installs** with pinned dependency versions matching a
-> verified working DeepTCR environment (TF 2.15.1, Keras 2.15.0, etc.), use
-> the convenience script:
-> ```bash
-> bash scripts/install-deeptcr-repro.sh            # pip
-> UV=1 bash scripts/install-deeptcr-repro.sh       # uv
-> DRY_RUN=1 bash scripts/install-deeptcr-repro.sh  # preview only
-> ```
-> Or the equivalent two-step workflow:
-> ```bash
-> pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
-> pip install -r requirements/deeptcr-pinned.txt
-> ```
-> See `requirements/deeptcr-pinned.txt` for the full version table.
+> **Alternative — `.[deeptcr]` extra:** `uv pip install ".[deeptcr]"` installs
+> DeepTCR from its GitHub source and lets DeepTCR manage its own dependencies
+> (TensorFlow 2.12.0 on Linux, no numpy pin). This is simpler but **not
+> reproducible** — version drift may affect results.
+
+Without a local clone:
+
+```bash
+uv pip install "tcrconsensus[tcrdist3] @ git+https://github.com/Orillas/TCRcons.git"
+# DeepTCR: still use the two-step workflow above before installing tcrconsensus
+```
 
 ### 3 · External binary backends — `install-backends` (`GLIPH2`, `GIANA`, `TCRMatch`)
 
@@ -160,7 +156,10 @@ uv run python -c "from tcrconsensus import TCRConsensus; print(TCRConsensus(mode
 ```bash
 uv venv --python 3.10
 git clone https://github.com/Orillas/TCRcons.git && cd TCRcons
-uv pip install ".[clusterers]"                                                        # core + tcrdist3 + deeptcr
+uv pip install .                                                                       # core
+uv pip install ".[tcrdist3]"                                                           # +tcrdist3
+pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
+pip install -r requirements/deeptcr-pinned.txt                                         # +deeptcr (reproducible)
 uv pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"     # +clustcr (no deps)
 uv pip install markov-clustering faiss-cpu==1.7.4                                      # clusTCR runtime deps
 uv run tcrconsensus install-backends --all                                            # +gliph2/giana/tcrmatch
@@ -192,7 +191,10 @@ above is the same, just `pip …` instead of `uv pip …`, and `python …` /
 
 ```bash
 python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install ".[clusterers]"
+pip install .                                          # core
+pip install ".[tcrdist3]"                              # +tcrdist3
+pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
+pip install -r requirements/deeptcr-pinned.txt         # +deeptcr (reproducible)
 ```
 
 ### Clustering methods at a glance
