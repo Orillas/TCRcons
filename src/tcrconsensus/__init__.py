@@ -2,6 +2,13 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    __version__ = version("tcrconsensus")
+except PackageNotFoundError:
+    __version__ = "0.0.0.dev"
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional

@@ -311,6 +311,7 @@ def _run_pipeline(
 
 
 @click.group()
+@click.version_option(version=None, package_name="tcrconsensus", message="%(package)s %(version)s")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose logging")
 def cli(verbose):
     """TCR Consensus Clustering Framework."""
