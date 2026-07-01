@@ -43,5 +43,6 @@ _tier*_backup_path.txt
 notes*.html
 
 # ---- Misc large/regenerable artifacts ----
+uv.lock
 *.log
 VgeneScores.txt
