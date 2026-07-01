@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import json
 import logging
-import sys
-from pathlib import Path
 
 import click
 
@@ -70,7 +68,7 @@ def _get_clusterers(methods: list[str]) -> dict:
 def _run_pipeline(
     input_path: str,
     output_dir: str,
-    objective: str = "balanced",
+    objective: str = "fast_screening",
     methods: list[str] | None = None,
     consensus_mode: str | None = None,
     config_path: str | None = None,
@@ -325,7 +323,7 @@ def profile(input_path, output):
 @click.argument("input_path")
 @click.option("--mode", default="balanced", help="Consensus mode: balanced | conservative")
 @click.option("--methods", default=None, help="Comma-separated methods")
-@click.option("--objective", default="balanced", help="Objective: balanced | high_purity | high_recall | noise_robust")
+@click.option("--objective", default="fast_screening", help="Objective: fast_screening | balanced | high_purity | high_recall | noise_robust")
 @click.option("--output", "-o", default="tcrconsensus_output", help="Output directory")
 @click.option("--config", "config_path", default=None, help="YAML config file")
 def run(input_path, mode, methods, objective, output, config_path):
@@ -337,7 +335,7 @@ def run(input_path, mode, methods, objective, output, config_path):
 
 @cli.command()
 @click.argument("input_path")
-@click.option("--objective", default="balanced", help="Objective")
+@click.option("--objective", default="fast_screening", help="Objective: fast_screening | balanced | high_purity | high_recall | noise_robust")
 @click.option("--output", "-o", default="tcrconsensus_output", help="Output directory")
 @click.option("--config", "config_path", default=None, help="YAML config file")
 def auto(input_path, objective, output, config_path):

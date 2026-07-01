@@ -18,16 +18,12 @@ selection:
   rules:
     bulk_noisy_beta:
       methods: [tcrdist3, gliph2, hd_baseline]
-      consensus_mode: conservative
     antigen_enriched:
       methods: [clustcr, giana, gliph2, tcrdist3]
-      consensus_mode: balanced
     high_purity:
       methods: [clustcr, tcrmatch, gliph2]
-      consensus_mode: conservative
     high_recall:
       methods: [deeptcr, giana, tcrdist3]
-      consensus_mode: coverage
 
 consensus:
   conservative:

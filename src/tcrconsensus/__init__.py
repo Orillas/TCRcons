@@ -18,6 +18,7 @@ from .io.writer import ensure_run_dir, write_normalized, write_artifact_manifest
 from .config import load_config, Config  # noqa: F401
 from .profiling.profiler import profile as compute_profile
 from .selection.selector import select_methods
+from .selection.tiered import execute_tiered, split_methods_by_tier
 from .clusterers.hd_baseline import HDBaselineClusterer
 from .clusterers.levenshtein import LevenshteinClusterer
 from .consensus.modes import balanced_consensus, conservative_consensus, coverage_consensus
@@ -66,13 +67,13 @@ class TCRConsensus:
     """Main entry point for TCR consensus clustering.
 
     Usage:
-        model = TCRConsensus(objective="balanced", mode="auto")
+        model = TCRConsensus(objective="fast_screening", mode="auto")
         result = model.fit_predict("input.tsv")
     """
 
     def __init__(
         self,
-        objective: str = "balanced",
+        objective: str = "fast_screening",
         mode: str = "auto",
         config_path: str | None = None,
         output_dir: str = "tcrconsensus_output",
@@ -115,20 +116,49 @@ class TCRConsensus:
         else:
             consensus_mode = self.mode
 
-        # Run clusterers
-        available = self._get_clusterers(plan.selected_methods)
-        all_assignments = []
-        method_results = []
+        # Run clusterers (tiered or flat)
+        all_assignments: list = []
+        method_results: list = []
+        tier_stats: dict | None = None
 
-        for method_name, clusterer in available.items():
-            result = clusterer.safe_execute(df, Path(self.output_dir), cfg)
-            all_assignments.extend(result.assignments)
-            method_results.append({
-                "method": method_name,
-                "status": result.status.value,
-                "n_assignments": len(result.assignments),
-                "runtime_seconds": result.runtime_seconds,
-            })
+        if plan.use_tiered:
+            cheap_methods, expensive_methods = split_methods_by_tier(
+                plan.selected_methods, cfg.get("tiered", {}).get("tiers")
+            )
+            if cheap_methods and expensive_methods:
+                all_tcr_ids = [str(tid) for tid in df["tcr_id"].tolist()]
+
+                def _clusterer_factory(mname: str):
+                    avail = self._get_clusterers([mname])
+                    return avail.get(mname)
+
+                all_assignments, tier_stats = execute_tiered(
+                    df=df,
+                    all_tcr_ids=all_tcr_ids,
+                    cheap_methods=cheap_methods,
+                    expensive_methods=expensive_methods,
+                    clusterer_factory=_clusterer_factory,
+                    workdir=Path(self.output_dir),
+                    config=cfg,
+                )
+                method_results = tier_stats.get("method_results", [])
+            else:
+                # Cannot split — fall back to flat execution
+                plan.use_tiered = False
+
+        if not plan.use_tiered:
+            # Flat execution (original behaviour)
+            available = self._get_clusterers(plan.selected_methods)
+
+            for method_name, clusterer in available.items():
+                result = clusterer.safe_execute(df, Path(self.output_dir), cfg)
+                all_assignments.extend(result.assignments)
+                method_results.append({
+                    "method": method_name,
+                    "status": result.status.value,
+                    "n_assignments": len(result.assignments),
+                    "runtime_seconds": result.runtime_seconds,
+                })
 
         # Consensus — only pass kwargs each mode actually accepts
         weights = compute_method_weights(
@@ -181,7 +211,8 @@ class TCRConsensus:
             run_plan=plan,
             recommendation=rec,
             metrics={},
-            report={"method_results": method_results},
+            report={"method_results": method_results, "tiered_stats": tier_stats} if tier_stats
+                    else {"method_results": method_results},
             run_dir=self.output_dir,
         )
 

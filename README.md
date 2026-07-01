@@ -222,8 +222,8 @@ clear, actionable error if none is found.
 ```python
 from tcrconsensus import TCRConsensus
 
-# Auto mode: profile → select methods → cluster → consensus → refine
-model = TCRConsensus(objective="balanced")
+# Fast mode (default): cheap methods on full data, expensive only where needed
+model = TCRConsensus()
 result = model.fit_predict("input.tsv")
 
 print(f"Clusters: {len(result.clusters)}")
@@ -282,21 +282,27 @@ tcrconsensus run input.tsv --config user_config.yaml
 
 ### Built-in Presets
 
-| Preset | Effect |
-|--------|--------|
-| `high_purity` | Higher consensus threshold, conservative merging |
-| `noise_robust` | Noise-aware weighting, conservative mode |
-| `fast_screening` | Max 2 methods, faster runtime |
+| Preset | Effect on method selection |
+|--------|---------------------------|
+| `fast_screening` **(default)** | Broad method pool, tiered execution handles efficiency |
+| `balanced` | Equally weighted purity/sensitivity/noise/speed |
+| `high_purity` | Conservative methods, prioritise precision over recall |
+| `high_recall` | Sensitivity-focused methods, minimise false negatives |
+| `noise_robust` | Methods resilient to background noise |
 
 ## Objectives
 
-| Objective | Strategy |
-|-----------|----------|
-| `balanced` | Equal weight purity/sensitivity/noise/speed |
-| `high_purity` | Conservative consensus, high-purity methods |
-| `high_recall` | Coverage mode, sensitivity-focused methods |
-| `noise_robust` | Noise-aware weights, robust methods |
-| `fast_screening` | Minimal methods, fast execution |
+The **objective** controls which clustering methods are selected and how they
+are weighted. It does **not** affect whether methods run on all data — tiered
+execution (cheap methods first) is always enabled regardless of objective.
+
+| Objective | Selected methods | Weighting | Best for |
+|-----------|-----------------|-----------|---------|
+| `fast_screening` **(default)** | hd_baseline, levenshtein, giana, tcrdist3, gliph2, tcrmatch | speed | General use. Tiered execution keeps it fast on easy data |
+| `balanced` | All 8 methods | equal | Full coverage with compute budget |
+| `high_purity` | clustcr, gliph2, tcrmatch, hd_baseline | purity | Minimise false positives |
+| `high_recall` | deeptcr, giana, tcrdist3, hd_baseline | recall | Minimise false negatives |
+| `noise_robust` | tcrdist3, gliph2, hd_baseline | noise-robust | Noisy bulk repertoires |
 
 ## Consensus Modes
 
@@ -309,16 +315,45 @@ tcrconsensus run input.tsv --config user_config.yaml
 ## Pipeline Architecture
 
 ```
-Input → Normalize → Profile → Select Methods → Run Clusterers
-                                                    ↓
-Report ← Refine ← Consensus ← Weighted Co-association ←┘
+Input → Normalize → Profile → Select Methods
+                                         │
+                                         ▼
+                   ┌── Tiered Execution ──┐
+                   │                      │
+                   │ ① cheap methods      │  (hd_baseline, levenshtein,
+                   │    run on FULL data  │   clustcr, gliph2, giana, tcrmatch)
+                   │                      │
+                   │ ② detect divergent   │
+                   │    TCRs — cheap       │
+                   │    methods disagree   │
+                   │         │             │
+                   │    divergent ≥ 20     │
+                   │    && < total × 0.95? │
+                   │    ┌─ yes ─┐ no ─┐   │
+                   │    │                │   │
+                   │ ③ expensive       full │
+                   │    methods         fall-│
+                   │    on SUB-         back │
+                   │    SET             │   │
+                   └────────┬──────────┘   │
+                            │              │
+                            ▼              │
+                   Weighted Co-association ◄┘
+                            │
+                            ▼
+                   Consensus (balanced)
+                            │
+                            ▼
+                   Refine → Report
 ```
 
 1. **IO** — Parse AIRR/VDJdb/custom, normalize to canonical schema
 2. **Profiling** — Compute noise, VJ completeness, repertoire type
 3. **Selection** — Rule-based method selection from profile + objective
-4. **Clustering** — Run each method, collect assignments
-5. **Consensus** — Weighted pairwise co-association → graph clustering
+4. **Tiered Clustering** ★ — Cheap methods run on full data; expensive
+   methods (tcrdist3, DeepTCR) are only invoked on TCRs where cheap
+   methods disagree, saving substantial O(n²) compute
+5. **Consensus** — Weighted pairwise co-association → Leiden graph clustering
 6. **Refinement** — Split/merge/filter clusters, label core vs peripheral
 7. **Evaluation** — Purity, sensitivity, F1, ARI, NMI, retention
 8. **Reporting** — JSON + Markdown + matplotlib figures

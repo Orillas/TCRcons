@@ -1,9 +1,13 @@
-"""Rule-based method selection from dataset profile and user objective."""
+"""Method selection from dataset profile and user objective.
+
+Tiered execution (cheap methods on full data, expensive on divergent subset)
+is always the default. Consensus mode is no longer driven by objective —
+defaults to ``balanced``; users override via ``mode`` at run time.
+"""
 
 from __future__ import annotations
 
 import logging
-from typing import Any
 
 from ..schema.records import (
     DatasetProfile,
@@ -21,11 +25,18 @@ ALL_METHODS = ['hd_baseline', 'clustcr', 'gliph2', 'tcrdist3', 'giana', 'tcrmatc
 
 def select_methods(
     profile: DatasetProfile,
-    objective: Objective | str = Objective.BALANCED,
+    objective: Objective | str = Objective.FAST_SCREENING,
     config: dict | None = None,
     available_methods: list[str] | None = None,
 ) -> RunPlan:
-    """Select methods, consensus mode, and parameters from profile + objective."""
+    """Select methods from profile + objective.
+
+    Tiered execution runs cheap methods on the full dataset and expensive
+    methods only on divergent TCR subsets where cheap methods disagree.
+
+    Consensus mode is always ``balanced`` by default; override via the
+    ``mode`` parameter on ``TCRConsensus()`` or CLI ``--mode`` flag.
+    """
     config = config or {}
     available = set(available_methods or ALL_METHODS)
 
@@ -41,25 +52,21 @@ def select_methods(
 
     if rule:
         methods = [m for m in rule.get("methods", []) if m in available]
-        consensus_mode_str = rule.get("consensus_mode", "balanced")
     else:
-        methods, consensus_mode_str = _default_selection(profile, objective, available)
+        methods = _default_selection(profile, objective, available)
 
     # Ensure at least HD baseline is included
     if "hd_baseline" in available and "hd_baseline" not in methods:
         methods.append("hd_baseline")
 
-    consensus_mode = ConsensusMode(consensus_mode_str)
-
-    use_tiered = (
-        objective == Objective.FAST_SCREENING
-        or config.get("tiered", {}).get("enabled", False)
-    )
+    # Tiered execution is always enabled by default
+    # Opt out via config: tiered.enabled: false
+    use_tiered = config.get("tiered", {}).get("enabled", True)
 
     return RunPlan(
         objective=objective,
         selected_methods=methods,
-        consensus_mode=consensus_mode,
+        consensus_mode=ConsensusMode.BALANCED,
         use_tiered=use_tiered,
         method_params={},
         weighting_profile=_get_weight_profile(objective),
@@ -81,25 +88,21 @@ def _default_selection(
     profile: DatasetProfile,
     objective: Objective,
     available: set[str],
-) -> tuple[list[str], str]:
-    """Fallback selection when no config rule matches."""
-    methods = []
-    consensus_mode = "balanced"
+) -> list[str]:
+    """Fallback method selection when no config rule matches.
 
+    Returns only the method list — consensus mode is always ``balanced``
+    and tiered execution is always enabled by default.
+    """
     if objective == Objective.HIGH_PURITY:
         candidates = ["clustcr", "gliph2", "tcrmatch", "hd_baseline"]
-        consensus_mode = "conservative"
     elif objective == Objective.HIGH_RECALL:
         candidates = ["deeptcr", "giana", "tcrdist3", "hd_baseline"]
-        consensus_mode = "coverage"
     elif objective == Objective.FAST_SCREENING:
         # Tiered: cheap methods on full data, expensive only on divergent subset
         candidates = ["hd_baseline", "levenshtein", "giana", "tcrdist3", "gliph2", "tcrmatch"]
-        consensus_mode = "balanced"
-        # FAST_SCREENING always uses tiered execution
     elif objective == Objective.NOISE_ROBUST:
         candidates = ["tcrdist3", "gliph2", "hd_baseline"]
-        consensus_mode = "conservative"
     else:
         candidates = list(available)
 
@@ -107,7 +110,7 @@ def _default_selection(
     if not methods:
         methods = list(available)
 
-    return methods, consensus_mode
+    return methods
 
 
 def _get_weight_profile(objective: Objective) -> str:
