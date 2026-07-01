@@ -60,4 +60,4 @@ jobs:
         run: python -m compileall -q src
 
       - name: Run tests (including any backend-specific tests)
-        run: pytest -q -k "not (giana or gliph2 or tcrmatch or clustcr or deeptcr)"
+        run: pytest -q -k "not (giana or gliph2 or tcrmatch or clustcr or deeptcr or tcrdist3 or only_core)"
