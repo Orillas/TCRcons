@@ -14,8 +14,8 @@ from pathlib import Path
 from typing import Any, Optional
 
 from .io.parser import load_file, normalize
-from .io.writer import ensure_run_dir, write_normalized, write_artifact_manifest
-from .config import load_config, Config
+from .io.writer import ensure_run_dir, write_normalized, write_artifact_manifest  # noqa: F401
+from .config import load_config, Config  # noqa: F401
 from .profiling.profiler import profile as compute_profile
 from .selection.selector import select_methods
 from .clusterers.hd_baseline import HDBaselineClusterer
@@ -23,7 +23,7 @@ from .clusterers.levenshtein import LevenshteinClusterer
 from .consensus.modes import balanced_consensus, conservative_consensus, coverage_consensus
 from .consensus.weights import compute_method_weights
 from .refinement.refiner import refine
-from .reporting.report import generate_report
+from .reporting.report import generate_report  # noqa: F401
 from .schema.records import (
     DatasetProfile,
     RunPlan,

@@ -6,7 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [1.1.1] - 2026-06-30
+### Added
+- `BaseClusterer.is_available()` classmethod — each wrapper now detects
+  whether its backend is actually installed (try-import for Python packages,
+  file-exists for external binaries). `available_methods()` returns only
+  methods whose dependencies are present on the current system.
+- `tcrconsensus.available_methods()` module-level convenience function.
+- `levenshtein` added to `ALL_METHODS` list (was only in CLI, missing from
+  the public API).
+- `backend-test` CI job (Python 3.10/3.11) installing `.[tcrdist3]` and
+  running backend-specific tests.
+- `tests/test_backend_detection.py` — 12 tests covering `is_available()` on
+  all 8 wrappers and `available_methods()` behaviour.
+
+### Fixed
+- `selection/selector.py` and `configs/default.yaml`: replaced invalid
+  `ismart` reference with `tcrdist3` in the `high_recall` preset (iSMART
+  was never a supported method).
+- `evaluation/benchmark.py`: `_get_available_clusterers()` now uses
+  `is_available()` pattern consistent with `__init__.py` and `main.py`;
+  also added `levenshtein` which was missing from benchmark clusterers.
+
+[1.1.1] - 2026-06-30
 
 ### Fixed
 - `[deeptcr]` and `[clusterers]` were uninstallable on most hosts. Two causes,
