@@ -8,15 +8,14 @@ scipy>=1.9
 scikit-learn>=1.1
 matplotlib>=3.6
 
-# Optional clusterer backends — install via the pyproject extras, NOT by
-# uncommenting here (several are not pip-installable from PyPI):
-#   pip install ".[tcrdist3]"   # tcrdist3>=0.3 (+ parasail; no arm64-mac wheel, needs autotools)
-#   pip install ".[deeptcr]"    # DeepTCR from GitHub source (PyPI sdist probes nvidia-smi; TF managed by DeepTCR)
-#   pip install ".[clusterers]" # both of the above
-# clusTCR is NOT on PyPI and pins scipy==1.8 — install manually:
-#   pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
-# GLIPH2 / GIANA / TCRMatch are external binaries (TCR_*_LIB / TCR_*_SCRIPT /
-# TCR_*_BIN env vars), not pip packages.
+# Optional clusterer backends — see README for install details.
+# Do NOT uncomment here; several are not pip-installable from PyPI.
+#   tcrdist3:    pip install ".[tcrdist3]"
+#   DeepTCR:     see README two-step workflow (pinned deps)
+#   clusTCR:     pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
+#   GLIPH2:      tcrconsensus install-backends --gliph2
+#   GIANA:       tcrconsensus install-backends --giana
+#   TCRMatch:    tcrconsensus install-backends --tcrmatch
 
 # Development
 pytest>=7.0
