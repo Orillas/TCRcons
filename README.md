@@ -31,6 +31,7 @@ with other projects or the system Python:
 ```bash
 git clone https://github.com/Orillas/TCRcons.git && cd TCRcons       # project root
 uv venv --python 3.10                                                  # creates .venv/ right here
+source .venv/bin/activate                                       # activate venv 
 ```
 
 All following `uv pip install` and `uv run` commands target this `.venv`
@@ -97,7 +98,7 @@ uv pip install "tcrconsensus[clusterers] @ git+https://github.com/Orillas/TCRcon
 > ```
 > Or the equivalent two-step workflow:
 > ```bash
-> pip install --no-deps ".[deeptcr]"
+> pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
 > pip install -r requirements/deeptcr-pinned.txt
 > ```
 > See `requirements/deeptcr-pinned.txt` for the full version table.
@@ -136,11 +137,17 @@ or `~/.local/share/tcrconsensus/backends`) — **no
 
 clusTCR is not published to PyPI, and its `setup.py` pins `scipy==1.8`, which
 conflicts with tcrconsensus's `scipy>=1.9`. Install from source **without**
-re-pinning scipy:
+re-pinning scipy, then install its runtime dependencies:
 
 ```bash
 uv pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"
+uv pip install markov-clustering faiss-cpu==1.7.4
 ```
+
+> **Why the separate faiss step?** Recent `faiss-cpu` (≥1.13) requires
+> `numpy>=2`, which conflicts with the numpy 1.23.5 used by DeepTCR's pinned
+> environment. `faiss-cpu==1.7.4` is compatible with both numpy 1.x and
+> clusTCR's FAISS integration.
 
 ### 5 · Verify what is installed
 
@@ -154,7 +161,8 @@ uv run python -c "from tcrconsensus import TCRConsensus; print(TCRConsensus(mode
 uv venv --python 3.10
 git clone https://github.com/Orillas/TCRcons.git && cd TCRcons
 uv pip install ".[clusterers]"                                                        # core + tcrdist3 + deeptcr
-uv pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"     # +clustcr
+uv pip install --no-deps "clustcr @ git+https://github.com/svalkiers/clusTCR.git"     # +clustcr (no deps)
+uv pip install markov-clustering faiss-cpu==1.7.4                                      # clusTCR runtime deps
 uv run tcrconsensus install-backends --all                                            # +gliph2/giana/tcrmatch
 ```
 
