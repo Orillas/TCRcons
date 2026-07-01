@@ -154,8 +154,9 @@ uv run python -c "from tcrconsensus import TCRConsensus; print(TCRConsensus(mode
 ### One-shot full setup — all 8 methods
 
 ```bash
-uv venv --python 3.10
 git clone https://github.com/Orillas/TCRcons.git && cd TCRcons
+uv venv --python 3.10
+source .venv/bin/activate
 uv pip install .                                                                       # core
 uv pip install ".[tcrdist3]"                                                           # +tcrdist3
 pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
@@ -386,14 +387,14 @@ If you use tcrconsensus, please cite:
 ```bibtex
 @software{tcrconsensus,
   title  = {tcrconsensus: Scenario-adaptive TCR specificity consensus clustering},
-  author = {{TCR-Consensus Team}},
+  author = {Zhang, Jilin},
   year   = {2026},
+  doi    = {10.5281/zenodo.21094480},
   url    = {https://github.com/Orillas/TCRcons}
 }
 ```
 
-A versioned DOI (Zenodo) and the full author list will be added here upon
-deposit. See [`CITATION.cff`](CITATION.cff).
+A DOI is available at [10.5281/zenodo.21094480](https://doi.org/10.5281/zenodo.21094480).
 
 ## License
 

@@ -1,13 +1,14 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "tcrconsensus"
-# TODO(authorship): replace with real authors/ORCID before Zenodo deposit
 authors:
-  - name: "TCR-Consensus Team"
+  - name: "Jilin Zhang"
+    orcid: "https://orcid.org/0009-0006-6358-4922"
 type: software
-version: "1.1.0"
-date-released: "2026-06-29"
+version: "1.1.1"
+date-released: "2026-07-01"
 license: MIT
+doi: 10.5281/zenodo.21094480
 repository-code: "https://github.com/Orillas/TCRcons"
 keywords:
   - TCR
