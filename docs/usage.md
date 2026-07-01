@@ -3,11 +3,15 @@
 ## Installation
 
 ```bash
-# Core package
+# Core package (includes hd_baseline, levenshtein)
 pip install .
 
-# With optional clusterers
-pip install ".[clusterers]"
+# tcrdist3
+pip install ".[tcrdist3]"
+
+# DeepTCR (two-step workflow — recommended)
+pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
+pip install -r requirements/deeptcr-pinned.txt
 
 # Development dependencies
 pip install ".[dev]"

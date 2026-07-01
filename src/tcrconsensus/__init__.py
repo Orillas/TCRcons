@@ -68,7 +68,7 @@ class TCRConsensus:
 
     @property
     def available_methods(self) -> list[str]:
-        """Methods actually importable on this system."""
+        """All methods supported by TCRconsensus (backends detected at runtime)."""
         return list(self._get_clusterers(ALL_METHODS).keys())
 
     def fit_predict(
