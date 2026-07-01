@@ -9,9 +9,12 @@ is preserved in the project history (see *Full experiment suite* below).
 ## Prerequisites
 
 ```bash
-# the package + the Python-backend clusterers
-pip install "tcrconsensus[clusterers]"        # clusTCR, tcrdist3 (PyPI)
-pip install DeepTCR                            # TensorFlow backend (optional, heavy)
+# the package + tcrdist3
+pip install "tcrconsensus[tcrdist3]"
+
+# DeepTCR (two-step workflow — recommended for reproducible pinned deps)
+pip install --no-deps "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"
+pip install -r requirements/deeptcr-pinned.txt
 
 # external binaries (subprocess wrappers) must be on PATH: GLIPH2, GIANA, TCRMatch
 ```

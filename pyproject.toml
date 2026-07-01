@@ -9,8 +9,9 @@ description = "Scenario-adaptive TCR specificity consensus clustering framework"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
-# TODO(authorship): replace with real authors/ORCID before Zenodo deposit
-authors = [{name = "TCR-Consensus Team"}]
+authors = [
+    {name = "Jilin Zhang", orcid = "0009-0006-6358-4922"},
+]
 
 dependencies = [
     "pandas>=1.5",
@@ -42,24 +43,13 @@ tcrdist3 = ["tcrdist3>=0.3"]
 #   matplotlib==3.7.2    seaborn==0.12.2  umap-learn==0.5.5  h5py==3.8.0
 # (requirements-macos.txt is empty — macOS users add TF themselves).
 #
-# !! Version conflict with DeepTCR's hard pins !!
-# DeepTCR's setup.py declares tensorflow==2.12.0 / keras==2.12.0 via
-# install_requires. If you need different versions (e.g. TF 2.15.1),
-# use the convenience script:
-#   bash scripts/install-deeptcr-repro.sh
-# or manually:
-#   pip install --no-deps ".[deeptcr]"
-#   pip install -r requirements/deeptcr-pinned.txt
-#
 # Pinned to commit 3930ca0 (= DeepTCR v2.1.29, verified working 2026-06-30).
+#
+# For reproducible pinned versions (TF 2.15.1, Keras 2.15.0, numpy 1.23.5),
+# use the two-step workflow (see README) instead of this extra.
 deeptcr = ["DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"]
-# Umbrella: every backend that installs cleanly via pip. clustcr is intentionally
-# excluded — it pins scipy==1.8 in its setup.py, which conflicts with this
-# package's scipy>=1.9; install clustcr manually (see README). GLIPH2 / GIANA /
-# TCRMatch are external binaries, also manual.
-clusterers = ["tcrdist3>=0.3", "DeepTCR @ git+https://github.com/sidhomj/DeepTCR.git@3930ca05a987c7cc621b4f2ecfd740e2d62799d8"]
 # For pinned DeepTCR dependencies matching the verified .venv, see
-# requirements/deeptcr-pinned.txt and the --no-deps install workflow.
+# requirements/deeptcr-pinned.txt and the two-step workflow in README.
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -80,8 +70,8 @@ Issues = "https://github.com/Orillas/TCRcons/issues"
 packages = ["src/tcrconsensus"]
 
 [tool.hatch.metadata]
-# the [deeptcr] / [clusterers] extras reference DeepTCR by git URL (the PyPI
-# sdist's build probes nvidia-smi); hatchling needs this to accept direct refs.
+# the [deeptcr] extra references DeepTCR by git URL (the PyPI sdist's
+# build probes nvidia-smi); hatchling needs this to accept direct refs.
 allow-direct-references = true
 
 [tool.hatch.build]
