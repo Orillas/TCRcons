@@ -34,6 +34,14 @@ class TCRDist3Wrapper(BaseClusterer):
 
     name = "tcrdist3"
 
+    @classmethod
+    def is_available(cls) -> bool:
+        try:
+            from tcrdist.repertoire import TCRrep  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
     def __init__(
         self,
         organism: str = "human",

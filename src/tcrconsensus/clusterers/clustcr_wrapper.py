@@ -27,6 +27,14 @@ class ClusTCRWrapper(BaseClusterer):
 
     name = "clustcr"
 
+    @classmethod
+    def is_available(cls) -> bool:
+        try:
+            import clustcr  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
     def __init__(self, method: str = "two-step", n_cpus: int = 1):
         # Paper: default parameters → method="two-step" (FAISS + MCL)
         self.method = method

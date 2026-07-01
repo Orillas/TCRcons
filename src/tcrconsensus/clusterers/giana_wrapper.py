@@ -47,6 +47,14 @@ class GIANAWrapper(BaseClusterer):
 
     name = "giana"
 
+    @classmethod
+    def is_available(cls) -> bool:
+        try:
+            from ..backends import giana_script_path
+            return giana_script_path().is_file()
+        except Exception:
+            return False
+
     def __init__(
         self,
         giana_script: str = "",

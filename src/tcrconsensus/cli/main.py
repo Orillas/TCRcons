@@ -44,41 +44,26 @@ logger = logging.getLogger(__name__)
 def _get_clusterers(methods: list[str]) -> dict:
     """Instantiate available clusterers."""
     clusterers = {"hd_baseline": HDBaselineClusterer()}
-    try:
-        from ..clusterers.levenshtein import LevenshteinClusterer
-        clusterers["levenshtein"] = LevenshteinClusterer()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.clustcr_wrapper import ClusTCRWrapper
+    from ..clusterers.levenshtein import LevenshteinClusterer
+    clusterers["levenshtein"] = LevenshteinClusterer()
+    from ..clusterers.clustcr_wrapper import ClusTCRWrapper
+    if ClusTCRWrapper.is_available():
         clusterers["clustcr"] = ClusTCRWrapper()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.tcrdist3_wrapper import TCRDist3Wrapper
+    from ..clusterers.tcrdist3_wrapper import TCRDist3Wrapper
+    if TCRDist3Wrapper.is_available():
         clusterers["tcrdist3"] = TCRDist3Wrapper()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.gliph2_wrapper import GLIPH2Wrapper
+    from ..clusterers.gliph2_wrapper import GLIPH2Wrapper
+    if GLIPH2Wrapper.is_available():
         clusterers["gliph2"] = GLIPH2Wrapper()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.giana_wrapper import GIANAWrapper
+    from ..clusterers.giana_wrapper import GIANAWrapper
+    if GIANAWrapper.is_available():
         clusterers["giana"] = GIANAWrapper()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.tcrmatch_wrapper import TCRMatchWrapper
+    from ..clusterers.tcrmatch_wrapper import TCRMatchWrapper
+    if TCRMatchWrapper.is_available():
         clusterers["tcrmatch"] = TCRMatchWrapper()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.deeptcr_wrapper import DeepTCRWrapper
+    from ..clusterers.deeptcr_wrapper import DeepTCRWrapper
+    if DeepTCRWrapper.is_available():
         clusterers["deeptcr"] = DeepTCRWrapper()
-    except Exception:
-        pass
     return {k: v for k, v in clusterers.items() if k in methods}
 
 

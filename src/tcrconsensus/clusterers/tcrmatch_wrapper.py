@@ -43,6 +43,14 @@ class TCRMatchWrapper(BaseClusterer):
 
     name = "tcrmatch"
 
+    @classmethod
+    def is_available(cls) -> bool:
+        try:
+            from ..backends import tcrmatch_bin_path, tcrmatch_iedb_path
+            return tcrmatch_bin_path().is_file() and tcrmatch_iedb_path().is_file()
+        except Exception:
+            return False
+
     def __init__(
         self,
         tcrmatch_bin: str = "",

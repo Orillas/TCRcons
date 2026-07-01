@@ -74,6 +74,22 @@ class GLIPH2Wrapper(BaseClusterer):
 
     name = "gliph2"
 
+    @classmethod
+    def is_available(cls) -> bool:
+        # Check 1: clusTCR-bundled irtools
+        lib = _gliph2_lib_from_clustcr()
+        if lib:
+            return True
+        # Check 2: backends install directory
+        try:
+            from ..backends import gliph2_lib_path
+            cand = gliph2_lib_path()
+            return cand.is_dir() and any(
+                p.name.startswith("irtools") for p in cand.iterdir()
+            )
+        except Exception:
+            return False
+
     def __init__(
         self,
         gliph2_lib: str | None = None,

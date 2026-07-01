@@ -54,6 +54,14 @@ class DeepTCRWrapper(BaseClusterer):
 
     name = "deeptcr"
 
+    @classmethod
+    def is_available(cls) -> bool:
+        try:
+            from DeepTCR.DeepTCR import DeepTCR_U  # noqa: F401
+            return True
+        except ImportError:
+            return False
+
     def __init__(
         self,
         clustering_method: str = "option1",

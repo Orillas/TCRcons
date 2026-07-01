@@ -19,6 +19,7 @@ from .config import load_config, Config
 from .profiling.profiler import profile as compute_profile
 from .selection.selector import select_methods
 from .clusterers.hd_baseline import HDBaselineClusterer
+from .clusterers.levenshtein import LevenshteinClusterer
 from .consensus.modes import balanced_consensus, conservative_consensus, coverage_consensus
 from .consensus.weights import compute_method_weights
 from .refinement.refiner import refine
@@ -34,9 +35,17 @@ from .schema.records import (
 
 # All supported clustering methods
 ALL_METHODS: list[str] = [
-    "hd_baseline", "giana", "gliph2", "clustcr",
+    "hd_baseline", "levenshtein", "giana", "gliph2", "clustcr",
     "tcrmatch", "tcrdist3", "deeptcr",
 ]
+
+
+def available_methods() -> list[str]:
+    """Return methods whose backend dependencies are actually installed.
+
+    Convenience function equivalent to ``TCRConsensus().available_methods``.
+    """
+    return TCRConsensus().available_methods
 
 
 @dataclass
@@ -75,7 +84,12 @@ class TCRConsensus:
 
     @property
     def available_methods(self) -> list[str]:
-        """All methods supported by TCRconsensus (backends detected at runtime)."""
+        """Methods whose backend dependencies are actually installed.
+
+        Only returns methods where the underlying package or binary
+        (tcrdist3, DeepTCR, clusTCR, GLIPH2, GIANA, TCRMatch) can be
+        found on the current system. ``hd_baseline`` is always available.
+        """
         return list(self._get_clusterers(ALL_METHODS).keys())
 
     def fit_predict(
@@ -174,35 +188,23 @@ class TCRConsensus:
     @staticmethod
     def _get_clusterers(methods: list[str]) -> dict:
         """Instantiate available clusterers."""
-        clusterers: dict[str, Any] = {"hd_baseline": HDBaselineClusterer()}
-        try:
-            from .clusterers.clustcr_wrapper import ClusTCRWrapper
+        clusterers: dict[str, Any] = {"hd_baseline": HDBaselineClusterer(), "levenshtein": LevenshteinClusterer()}
+        from .clusterers.clustcr_wrapper import ClusTCRWrapper
+        if ClusTCRWrapper.is_available():
             clusterers["clustcr"] = ClusTCRWrapper()
-        except Exception:
-            pass
-        try:
-            from .clusterers.tcrdist3_wrapper import TCRDist3Wrapper
+        from .clusterers.tcrdist3_wrapper import TCRDist3Wrapper
+        if TCRDist3Wrapper.is_available():
             clusterers["tcrdist3"] = TCRDist3Wrapper()
-        except Exception:
-            pass
-        try:
-            from .clusterers.gliph2_wrapper import GLIPH2Wrapper
+        from .clusterers.gliph2_wrapper import GLIPH2Wrapper
+        if GLIPH2Wrapper.is_available():
             clusterers["gliph2"] = GLIPH2Wrapper()
-        except Exception:
-            pass
-        try:
-            from .clusterers.giana_wrapper import GIANAWrapper
+        from .clusterers.giana_wrapper import GIANAWrapper
+        if GIANAWrapper.is_available():
             clusterers["giana"] = GIANAWrapper()
-        except Exception:
-            pass
-        try:
-            from .clusterers.tcrmatch_wrapper import TCRMatchWrapper
+        from .clusterers.tcrmatch_wrapper import TCRMatchWrapper
+        if TCRMatchWrapper.is_available():
             clusterers["tcrmatch"] = TCRMatchWrapper()
-        except Exception:
-            pass
-        try:
-            from .clusterers.deeptcr_wrapper import DeepTCRWrapper
+        from .clusterers.deeptcr_wrapper import DeepTCRWrapper
+        if DeepTCRWrapper.is_available():
             clusterers["deeptcr"] = DeepTCRWrapper()
-        except Exception:
-            pass
         return {k: v for k, v in clusterers.items() if k in methods}

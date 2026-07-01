@@ -35,6 +35,15 @@ class BaseClusterer(ABC):
 
     name: str = "base"
 
+    @classmethod
+    def is_available(cls) -> bool:
+        """Check whether this clusterer's backend dependencies are installed.
+
+        Override in subclasses that wrap external packages or binaries.
+        Returns ``True`` by default (core methods are always available).
+        """
+        return True
+
     @abstractmethod
     def prepare_input(
         self, tcr_table: pd.DataFrame, config: dict
