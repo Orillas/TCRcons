@@ -26,7 +26,7 @@ selection:
       methods: [clustcr, tcrmatch, gliph2]
       consensus_mode: conservative
     high_recall:
-      methods: [deeptcr, giana, ismart]
+      methods: [deeptcr, giana, tcrdist3]
       consensus_mode: coverage
 
 consensus:

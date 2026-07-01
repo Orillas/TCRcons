@@ -90,7 +90,7 @@ def _default_selection(
         candidates = ["clustcr", "gliph2", "tcrmatch", "hd_baseline"]
         consensus_mode = "conservative"
     elif objective == Objective.HIGH_RECALL:
-        candidates = ["deeptcr", "giana", "ismart", "hd_baseline"]
+        candidates = ["deeptcr", "giana", "tcrdist3", "hd_baseline"]
         consensus_mode = "coverage"
     elif objective == Objective.FAST_SCREENING:
         # Tiered: cheap methods on full data, expensive only on divergent subset

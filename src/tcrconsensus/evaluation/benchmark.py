@@ -16,6 +16,7 @@ from ..io.parser import load_file, normalize
 from ..profiling.profiler import profile as compute_profile
 from ..selection.selector import select_methods
 from ..clusterers.hd_baseline import HDBaselineClusterer
+from ..clusterers.levenshtein import LevenshteinClusterer
 from ..consensus.modes import balanced_consensus, conservative_consensus
 from ..consensus.weights import compute_method_weights
 from ..refinement.refiner import refine
@@ -403,42 +404,33 @@ class BenchmarkRunner:
 
 
 def _get_available_clusterers() -> dict:
-    """Return dict of available clusterer instances."""
-    clusterers = {"hd_baseline": HDBaselineClusterer()}
+    """Return dict of available clusterer instances (uses is_available())."""
+    from ..clusterers.levenshtein import LevenshteinClusterer
+    clusterers = {"hd_baseline": HDBaselineClusterer(), "levenshtein": LevenshteinClusterer()}
 
-    try:
-        from ..clusterers.clustcr_wrapper import ClusTCRWrapper
+    from ..clusterers.clustcr_wrapper import ClusTCRWrapper
+    if ClusTCRWrapper.is_available():
         clusterers["clustcr"] = ClusTCRWrapper()
-    except Exception:
-        pass
 
-    try:
-        from ..clusterers.tcrdist3_wrapper import TCRDist3Wrapper
+    from ..clusterers.tcrdist3_wrapper import TCRDist3Wrapper
+    if TCRDist3Wrapper.is_available():
         clusterers["tcrdist3"] = TCRDist3Wrapper()
-    except Exception:
-        pass
 
-    try:
-        from ..clusterers.gliph2_wrapper import GLIPH2Wrapper
+    from ..clusterers.gliph2_wrapper import GLIPH2Wrapper
+    if GLIPH2Wrapper.is_available():
         clusterers["gliph2"] = GLIPH2Wrapper()
-    except Exception:
-        pass
 
-    try:
-        from ..clusterers.giana_wrapper import GIANAWrapper
+    from ..clusterers.giana_wrapper import GIANAWrapper
+    if GIANAWrapper.is_available():
         clusterers["giana"] = GIANAWrapper()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.tcrmatch_wrapper import TCRMatchWrapper
+
+    from ..clusterers.tcrmatch_wrapper import TCRMatchWrapper
+    if TCRMatchWrapper.is_available():
         clusterers["tcrmatch"] = TCRMatchWrapper()
-    except Exception:
-        pass
-    try:
-        from ..clusterers.deeptcr_wrapper import DeepTCRWrapper
+
+    from ..clusterers.deeptcr_wrapper import DeepTCRWrapper
+    if DeepTCRWrapper.is_available():
         clusterers["deeptcr"] = DeepTCRWrapper()
-    except Exception:
-        pass
 
     return clusterers
 
